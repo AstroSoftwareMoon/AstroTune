@@ -1,1 +1,1 @@
-AstroTune 2.0.1: word-by-word lyrics keep the spaces between words.
+AstroTune 2.0.1: lyrics keep their spaces, new Privacy and security page, no OpenTune links.

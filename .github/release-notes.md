@@ -18,6 +18,9 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 ## 🛠️ 2.0.1
 
 - **Letras palabra a palabra**: ya no salen las palabras pegadas ("Quememueroportide..."); se recuperan los espacios.
+- **Nueva página Privacidad y seguridad** en Ajustes: bloqueo de la app, ocultar en recientes, modo invitado, sin conexión, borrado del historial y qué servidores se usan.
+- **Vincular un dispositivo**: Ordenador explica AstroTune para PC; fuera el reproductor web y los enlaces de OpenTune.
+- **Acerca de**: un crédito a OpenTune sin enlaces; fuera Discord, estrella en GitHub, donaciones y avisos.
 
 ## ✨ Novedades de la 2.0
 

@@ -188,7 +188,7 @@ const saveSettings = async (patch) => { setState(await api.invoke("set_settings"
 const favs = () => new Set(S.library.favorites.map((x) => x.id));
 const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
 const errText = (e) => (String(e) === "offline" ? t("offline") : String(e) === "bad-link" ? t("badlink") : String(e));
-function toast(msg) { const el = $("#toast"); el.textContent = msg; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2800); }
+function toast(msg) { const el = $("#toast"); el.textContent = msg; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), msg.length > 70 ? 10000 : 2800); }
 
 // ---------------------------------------------------------------- look
 function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }

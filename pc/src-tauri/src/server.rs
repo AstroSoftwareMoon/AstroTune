@@ -273,10 +273,7 @@ impl Hub {
                     }
                 };
                 hub.net.note_media();
-                let mut r = hub.net.http().get(&s.url);
-                if !s.ua.is_empty() {
-                    r = r.header("User-Agent", &s.ua);
-                }
+                let mut r = s.dress(hub.net.http().get(&s.url));
                 r = r.header("Range", range.clone().unwrap_or_else(|| "bytes=0-".into()));
                 let resp = match r.send().await {
                     Ok(x) => x,
@@ -377,10 +374,7 @@ where
         };
         let to = (at + CHUNK - 1).min(end);
         net.note_media();
-        let mut r = net.http().get(&s.url).header("Range", format!("bytes={at}-{to}"));
-        if !s.ua.is_empty() {
-            r = r.header("User-Agent", &s.ua);
-        }
+        let r = s.dress(net.http().get(&s.url).header("Range", format!("bytes={at}-{to}")));
         let ok = match r.send().await {
             Ok(resp) if resp.status().is_success() => {
                 let mut body = resp.bytes_stream();
@@ -416,6 +410,7 @@ where
                 return;
             }
             fresh = true;
+            astrotune_core::yt::demote(&s.ua);
             tokio::time::sleep(std::time::Duration::from_millis(400 * failures)).await;
         }
     }

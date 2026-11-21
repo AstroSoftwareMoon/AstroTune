@@ -294,15 +294,19 @@ impl Net {
         match crate::yt::stream(&self.http, video_id, "es", opus_first).await {
             Ok(s) => Ok(s),
             Err(first) => {
-                let p = self.rp.query().player(video_id).await.map_err(|e| format!("{first} · {e}"))?;
+                // rustypipe as a last resort, and only with a link googlevideo really serves.
+                let p = self.rp.query().player(video_id).await.map_err(|e| format!("{first} · rustypipe: {e}"))?;
                 let formats = if opus_first { vec![AudioFormat::Webm, AudioFormat::M4a] } else { vec![AudioFormat::M4a, AudioFormat::Webm] };
                 for f in formats {
                     let filter = StreamFilter::new().no_video().audio_formats(vec![f]);
                     if let Some(s) = p.select_audio_stream(&filter) {
-                        return Ok(crate::yt::Stream { url: s.url.clone(), mime: s.mime.split(';').next().unwrap_or("audio/mp4").into(), ua: String::new(), size: Some(s.size) });
+                        let st = crate::yt::Stream { url: s.url.clone(), mime: s.mime.split(';').next().unwrap_or("audio/mp4").into(), ua: String::new(), size: Some(s.size), origin: String::new() };
+                        if crate::yt::probe(&self.http, &st).await {
+                            return Ok(st);
+                        }
                     }
                 }
-                Err(first)
+                Err(format!("{first} · rustypipe: googlevideo refused the link"))
             }
         }
     }
@@ -332,19 +336,46 @@ impl Net {
                 return Ok(());
             }
         };
+        // 2 MB ranges, like playback: a doubted link serves small ranges and refuses big ones.
+        // A refused range demotes that identity and asks again for a fresh link, a few times.
+        let mut s = s;
         let mut at = 0u64;
+        let mut failures = 0u32;
         while at < total {
-            let end = (at + 8 * 1024 * 1024).min(total) - 1;
-            let r = self.media_get(&s, Some((at, end))).send().await.map_err(err)?;
-            if !r.status().is_success() {
-                return Err(format!("HTTP {}", r.status().as_u16()));
+            let end = (at + 2 * 1024 * 1024).min(total) - 1;
+            let ok = match self.media_get(&s, Some((at, end))).send().await {
+                Ok(r) if r.status().is_success() => match r.bytes().await {
+                    Ok(b) if !b.is_empty() => {
+                        out.write_all(&b).await.map_err(err)?;
+                        at += b.len() as u64;
+                        true
+                    }
+                    _ => false,
+                },
+                Ok(r) => {
+                    if failures >= 4 {
+                        return Err(format!("googlevideo HTTP {}", r.status().as_u16()));
+                    }
+                    false
+                }
+                Err(e) => {
+                    if failures >= 4 {
+                        return Err(err(e));
+                    }
+                    false
+                }
+            };
+            if ok {
+                failures = 0;
+            } else {
+                failures += 1;
+                if failures > 4 {
+                    return Err("googlevideo refused the link".into());
+                }
+                crate::yt::demote(&s.ua);
+                tokio::time::sleep(std::time::Duration::from_millis(400 * failures as u64)).await;
+                s = self.stream(video_id, false).await?;
             }
-            let b = r.bytes().await.map_err(err)?;
-            if b.is_empty() {
-                break;
-            }
-            out.write_all(&b).await.map_err(err)?;
-            at += b.len() as u64;
         }
         out.flush().await.map_err(err)?;
         Ok(())
@@ -352,10 +383,7 @@ impl Net {
 
     /// A request for the stream's bytes, dressed as the client that minted the URL.
     pub fn media_get(&self, s: &crate::yt::Stream, range: Option<(u64, u64)>) -> reqwest::RequestBuilder {
-        let mut r = self.http.get(&s.url);
-        if !s.ua.is_empty() {
-            r = r.header("User-Agent", &s.ua);
-        }
+        let mut r = s.dress(self.http.get(&s.url));
         if let Some((a, b)) = range {
             r = r.header("Range", format!("bytes={a}-{b}"));
         }

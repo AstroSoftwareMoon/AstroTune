@@ -24,6 +24,8 @@ pub struct Client {
     pub make: &'static str,
     pub model: &'static str,
     pub sdk: Option<u32>,
+    /// Browser-shaped clients only: the host they claim to run on (sent as Origin/Referer).
+    pub origin: Option<&'static str>,
 }
 
 /// Same identities and versions as the Android app, in the order it walks them
@@ -39,6 +41,20 @@ pub const CLIENTS: &[Client] = &[
         make: "Google",
         model: "Pixel 9 Pro",
         sdk: Some(35),
+        origin: None,
+    },
+    // TV Cobalt v7: works on flagged addresses without a PO token (StreamResolver.kt, second).
+    Client {
+        name: "TVHTML5",
+        version: "7.20260707.07.00",
+        id: "7",
+        ua: "Mozilla/5.0(SMART-TV; Linux; Tizen 4.0.0.2) AppleWebkit/605.1.15 (KHTML, like Gecko) SamsungBrowser/9.2 TV Safari/605.1.15",
+        os_name: "",
+        os_version: "",
+        make: "",
+        model: "",
+        sdk: None,
+        origin: Some("https://www.youtube.com"),
     },
     Client {
         name: "ANDROID_VR",
@@ -50,6 +66,7 @@ pub const CLIENTS: &[Client] = &[
         make: "Oculus",
         model: "Quest 3",
         sdk: Some(32),
+        origin: None,
     },
     Client {
         name: "ANDROID_VR",
@@ -61,6 +78,7 @@ pub const CLIENTS: &[Client] = &[
         make: "Oculus",
         model: "Quest 3",
         sdk: Some(32),
+        origin: None,
     },
     Client {
         name: "IOS",
@@ -72,6 +90,7 @@ pub const CLIENTS: &[Client] = &[
         make: "Apple",
         model: "iPhone16,2",
         sdk: None,
+        origin: None,
     },
     Client {
         name: "IOS",
@@ -83,6 +102,7 @@ pub const CLIENTS: &[Client] = &[
         make: "Apple",
         model: "iPhone16,2",
         sdk: None,
+        origin: None,
     },
 ];
 
@@ -125,9 +145,9 @@ fn find_visitor(body: &str) -> Option<String> {
 
 /// Whether googlevideo really serves this URL: a 2 MB range (the size playback asks for, since a
 /// doubted session passes small probes and fails big ones), audio back, and bytes that arrive.
-async fn probe(http: &reqwest::Client, s: &Stream) -> bool {
+pub async fn probe(http: &reqwest::Client, s: &Stream) -> bool {
     use futures_util::StreamExt;
-    let r = http.get(&s.url).header("Range", "bytes=0-2097151").header("User-Agent", &s.ua).send().await;
+    let r = s.dress(http.get(&s.url).header("Range", "bytes=0-2097151")).send().await;
     let Ok(resp) = r else { return false };
     if !resp.status().is_success() {
         return false;
@@ -156,6 +176,28 @@ pub struct Stream {
     pub mime: String,
     pub ua: String,
     pub size: Option<u64>,
+    /// Origin the media fetch has to repeat (browser-shaped clients), empty otherwise.
+    pub origin: String,
+}
+
+impl Stream {
+    /// The headers the media request must carry for this URL (PlayerClient.mediaHeaders).
+    pub fn dress(&self, mut r: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if !self.ua.is_empty() {
+            r = r.header("User-Agent", &self.ua);
+        }
+        if !self.origin.is_empty() {
+            r = r.header("Origin", &self.origin).header("Referer", format!("{}/", self.origin));
+        }
+        r
+    }
+}
+
+/// A URL from this identity was refused part way: start the next walk at the identity after it.
+pub fn demote(ua: &str) {
+    if let Some(i) = CLIENTS.iter().position(|c| c.ua == ua) {
+        let _ = LAST_GOOD.compare_exchange(i, (i + 1) % CLIENTS.len(), Ordering::Relaxed, Ordering::Relaxed);
+    }
 }
 
 fn pick(formats: &[Value], opus_first: bool) -> Option<&Value> {
@@ -170,10 +212,12 @@ fn pick(formats: &[Value], opus_first: bool) -> Option<&Value> {
 }
 
 async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_first: bool, visitor: Option<&str>) -> Result<Stream, String> {
-    let mut client = json!({
-        "clientName": c.name, "clientVersion": c.version, "osName": c.os_name, "osVersion": c.os_version,
-        "deviceMake": c.make, "deviceModel": c.model, "hl": hl, "gl": "US",
-    });
+    let mut client = json!({ "clientName": c.name, "clientVersion": c.version, "hl": hl, "gl": "US" });
+    for (k, v) in [("osName", c.os_name), ("osVersion", c.os_version), ("deviceMake", c.make), ("deviceModel", c.model)] {
+        if !v.is_empty() {
+            client[k] = json!(v);
+        }
+    }
     if let Some(s) = c.sdk {
         client["androidSdkVersion"] = json!(s);
     }
@@ -188,6 +232,9 @@ async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_
         .header("X-YouTube-Client-Version", c.version);
     if let Some(v) = visitor {
         req = req.header("X-Goog-Visitor-Id", v);
+    }
+    if let Some(o) = c.origin {
+        req = req.header("Origin", o).header("Referer", format!("{o}/"));
     }
     let resp = req
         .json(&body)
@@ -210,6 +257,7 @@ async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_
         mime: f["mimeType"].as_str().unwrap_or("audio/mp4").split(';').next().unwrap_or("audio/mp4").to_string(),
         ua: c.ua.to_string(),
         size: f["contentLength"].as_str().and_then(|s| s.parse().ok()),
+        origin: c.origin.unwrap_or_default().to_string(),
     })
 }
 
@@ -229,7 +277,7 @@ pub async fn stream(http: &reqwest::Client, video_id: &str, hl: &str, opus_first
                     LAST_GOOD.store(i, Ordering::Relaxed);
                     return Ok(s);
                 }
-                errors.push(format!("{} {}: refused by googlevideo", c.name, c.version));
+                errors.push(format!("{} {}: googlevideo refused the link", c.name, c.version));
             }
             Err(e) => {
                 let l = e.to_lowercase();

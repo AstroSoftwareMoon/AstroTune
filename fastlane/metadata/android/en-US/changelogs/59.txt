@@ -1,0 +1,1 @@
+AstroTune 1.9.4: Rust versions fix HTTP 403 (TV identity, switch identity when a link is refused, 2 MB ranges).

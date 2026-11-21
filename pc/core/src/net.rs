@@ -283,6 +283,23 @@ impl Net {
         }
     }
 
+    /// A direct audio stream for the track, so playback starts at once instead of after a full
+    /// download. `opus_first` prefers Opus/WebM (Linux web views play it out of the box).
+    pub async fn stream(&self, video_id: &str, opus_first: bool) -> Result<(String, String), String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        self.log.note("googlevideo.com");
+        let p = self.rp.query().player(video_id).await.map_err(err)?;
+        let formats = if opus_first { vec![AudioFormat::Webm, AudioFormat::M4a] } else { vec![AudioFormat::M4a, AudioFormat::Webm] };
+        for f in formats {
+            let filter = StreamFilter::new().no_video().audio_formats(vec![f]);
+            if let Some(s) = p.select_audio_stream(&filter) {
+                return Ok((s.url.clone(), s.mime.clone()));
+            }
+        }
+        Err("no-stream".into())
+    }
+
     /// Downloads the track's audio (AAC in an .m4a) to `dest`.
     pub async fn fetch_audio(&self, video_id: &str, dest: &Path) -> Result<(), String> {
         self.online()?;

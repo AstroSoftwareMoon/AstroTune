@@ -27,6 +27,8 @@ struct App {
     offline: Arc<AtomicBool>,
     audio: audio::Player,
     cache: PathBuf,
+    /// Stream addresses already looked up (they stay valid for hours), so skipping ahead is instant.
+    streams: std::sync::Mutex<std::collections::HashMap<String, (std::time::Instant, String, String)>>,
 }
 
 /// Keeps the audio cache small: the 40 most recent tracks stay, so replays work even offline.
@@ -62,6 +64,63 @@ async fn charts(app: State<'_, App>) -> Result<Page, String> { app.net.charts().
 async fn moods(app: State<'_, App>) -> Result<Vec<Mood>, String> { app.net.moods().await }
 #[tauri::command]
 async fn mood(app: State<'_, App>, id: String) -> Result<Page, String> { app.net.mood(&id).await }
+
+#[derive(serde::Serialize)]
+struct Source {
+    kind: &'static str,
+    src: String,
+    mime: String,
+}
+
+fn cached_file(app: &App, id: &str) -> PathBuf {
+    let safe: String = id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-').collect();
+    app.cache.join(format!("{safe}.m4a"))
+}
+
+async fn lookup(app: &App, id: &str) -> Result<Source, String> {
+    let file = cached_file(app, id);
+    if file.exists() {
+        return Ok(Source { kind: "file", src: file.to_string_lossy().into_owned(), mime: "audio/mp4".into() });
+    }
+    if let Some((at, url, mime)) = app.streams.lock().unwrap().get(id).cloned() {
+        if at.elapsed().as_secs() < 3 * 3600 {
+            return Ok(Source { kind: "url", src: url, mime });
+        }
+    }
+    let (url, mime) = app.net.stream(id, cfg!(target_os = "linux")).await?;
+    app.streams.lock().unwrap().insert(id.to_string(), (std::time::Instant::now(), url.clone(), mime.clone()));
+    Ok(Source { kind: "url", src: url, mime })
+}
+
+/// Where to play a track from: the local copy if there is one, otherwise a direct stream.
+/// Records the play in the history.
+#[tauri::command]
+async fn resolve(app: State<'_, App>, track: Track) -> Result<Source, String> {
+    let s = lookup(&app, &track.id).await?;
+    app.store.record_play(&track);
+    Ok(s)
+}
+
+/// Looks the next track up ahead of time, so it starts without waiting.
+#[tauri::command]
+async fn prefetch(app: State<'_, App>, id: String) -> Result<(), String> {
+    lookup(&app, &id).await.map(|_| ())
+}
+
+/// Keeps a copy of a streamed track for offline listening (desktop only, where data isn't metered).
+#[tauri::command]
+async fn keep(app: State<'_, App>, track: Track) -> Result<(), String> {
+    if cfg!(target_os = "android") || cached_file(&app, &track.id).exists() {
+        return Ok(());
+    }
+    let safe: String = track.id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-').collect();
+    let _ = fs::create_dir_all(&app.cache);
+    let part = app.cache.join(format!("{safe}.part.m4a"));
+    app.net.fetch_audio(&track.id, &part).await?;
+    fs::rename(&part, cached_file(&app, &track.id)).map_err(|e| e.to_string())?;
+    trim_cache(&app.cache);
+    Ok(())
+}
 
 #[tauri::command]
 async fn search(app: State<'_, App>, query: String) -> Result<Vec<Track>, String> {
@@ -206,13 +265,16 @@ pub fn run() {
                 Net::new(cache.join("client"), log.clone(), offline.clone()).map_err(|e| -> Box<dyn std::error::Error> { e.into() })?,
             );
             let audio = audio::Player::new(tauri_app.handle().clone(), settings.volume);
-            tauri_app.manage(App { store, net, log, offline, audio, cache: cache.join("audio") });
+            tauri_app.manage(App { store, net, log, offline, audio, cache: cache.join("audio"), streams: Default::default() });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             search,
             play,
             fetch_track,
+            resolve,
+            prefetch,
+            keep,
             search_artists,
             search_albums,
             artist,

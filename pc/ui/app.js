@@ -414,19 +414,47 @@ function render() {
 // ---------------------------------------------------------------- playback engine
 // Desktop: Rust plays the file (rodio). Mobile: Rust downloads it, the web view plays it.
 const MOBILE = /Android|iPhone|iPad/i.test(navigator.userAgent) || /[?&]mobile/.test(location.search);
-const au = MOBILE ? new Audio() : null;
-const eng = MOBILE
-  ? {
-      async play(tr) { if (MOCK) return; const p = await api.invoke("fetch_track", { track: tr }); au.src = TAURI.core.convertFileSrc(p); au.volume = (S.settings.volume ?? 0.8); await au.play(); },
-      pause: () => au.pause(), resume: () => au.play(), seek: (s) => { au.currentTime = Math.max(0, s); }, volume: (v) => { au.volume = v; },
-    }
-  : { play: (tr) => api.invoke("play", { track: tr }), pause: () => api.invoke("pause"), resume: () => api.invoke("resume"), seek: (s) => api.invoke("seek", { seconds: s }), volume: (v) => api.invoke("set_volume", { volume: v }) };
+// Every platform plays through the web view's <audio>: the Rust core hands it a direct stream (or the
+// local copy), so a song starts in a moment instead of after a full download. If the web view can't
+// play it, desktop falls back to the native player (rodio) and mobile to a downloaded copy.
+const au = new Audio(); au.preload = "auto";
+let native = false; // true while the native (rodio) player has the current song
+const srcOf = (s) => (s.kind === "file" ? TAURI.core.convertFileSrc(s.src) : s.src);
+function tryPlay(url) {
+  return new Promise((ok, no) => {
+    const fail = () => { cleanup(); no(new Error("media")); };
+    const go = () => { cleanup(); ok(); };
+    const cleanup = () => { au.removeEventListener("error", fail); au.removeEventListener("playing", go); };
+    au.addEventListener("error", fail, { once: true }); au.addEventListener("playing", go, { once: true });
+    au.src = url; au.play().catch(fail);
+  });
+}
+let playSeq = 0;
+const eng = {
+  async play(tr) {
+    if (MOCK) return;
+    const seq = ++playSeq;
+    if (native) { api.invoke("pause"); native = false; }
+    au.volume = S.settings.volume ?? 0.8;
+    let s = null;
+    try { s = await api.invoke("resolve", { track: tr }); if (seq !== playSeq) return; await tryPlay(srcOf(s)); if (s.kind === "url") api.invoke("keep", { track: tr }).catch(() => {}); return; }
+    catch (e) { if (seq !== playSeq) return; if (!s && String(e) === "offline") throw e; }
+    au.removeAttribute("src"); au.load();
+    if (MOBILE) { const p = await api.invoke("fetch_track", { track: tr }); if (seq === playSeq) await tryPlay(TAURI.core.convertFileSrc(p)); }
+    else { native = true; await api.invoke("play", { track: tr }); }
+  },
+  pause: () => (native ? api.invoke("pause") : au.pause()),
+  resume: () => (native ? api.invoke("resume") : au.play()),
+  seek: (s) => (native ? api.invoke("seek", { seconds: s }) : (au.currentTime = Math.max(0, s))),
+  volume: (v) => { au.volume = v; api.invoke("set_volume", { volume: v }); },
+};
+const prefetchNext = () => { if (MOCK || !queue.length) return; const n = queue[(qi + 1) % queue.length]; if (n && n !== cur) api.invoke("prefetch", { id: n.id }).catch(() => {}); };
 
 let queue = [], qi = -1, cur = null, playing = false, pos = 0, shuffle = false, repeatMode = 0, srcLabel = "", showLyr = false, sleepAt = 0, sleepT = null, sleepEnd = false;
 async function playAt(i) {
   if (!queue.length) return; qi = (i + queue.length) % queue.length; const tr = queue[qi];
   cur = tr; pos = 0; setPlaying(true); paintNow(); tintFrom(tr);
-  try { await eng.play(tr); if (!S.settings.guest) refreshState(); } catch (e) { setPlaying(false); toast(t("noplay") + ": " + errText(e)); }
+  try { await eng.play(tr); prefetchNext(); if (!S.settings.guest) refreshState(); } catch (e) { setPlaying(false); toast(t("noplay") + ": " + errText(e)); }
 }
 async function refreshState() { try { setState(await api.invoke("get_state")); } catch {} }
 function playList(tracks, i, label, shuf) {
@@ -466,11 +494,11 @@ function onTick(p) {
   if (playing === p.paused) setPlaying(!p.paused);
 }
 const paint = (el) => el.style.setProperty("--p", (100 * el.value) / el.max + "%");
-listen("player-tick", onTick); listen("player-ended", () => next(true)); listen("player-error", (m) => toast(String(m)));
-if (MOBILE) {
-  au.ontimeupdate = () => onTick({ pos: au.currentTime, paused: au.paused }); au.onended = () => next(true); au.onerror = () => cur && toast(t("noplay"));
-  if ("mediaSession" in navigator) { const ms = navigator.mediaSession; ms.setActionHandler("play", toggle); ms.setActionHandler("pause", toggle); ms.setActionHandler("nexttrack", () => next()); ms.setActionHandler("previoustrack", prev); }
-}
+listen("player-tick", (p) => native && onTick(p)); listen("player-ended", () => native && next(true)); listen("player-error", (m) => toast(String(m)));
+au.ontimeupdate = () => !native && onTick({ pos: au.currentTime, paused: au.paused });
+au.onpause = au.onplay = () => !native && onTick({ pos: au.currentTime, paused: au.paused });
+au.onended = () => !native && next(true);
+if ("mediaSession" in navigator) { const ms = navigator.mediaSession; ms.setActionHandler("play", toggle); ms.setActionHandler("pause", toggle); ms.setActionHandler("nexttrack", () => next()); ms.setActionHandler("previoustrack", prev); }
 
 // ---------------------------------------------------------------- full player
 function drawPlayer() {
@@ -609,7 +637,7 @@ $("#mini").onclick = (e) => { if (!e.target.closest("button,input")) openPlayer(
 $("#mini-pp").onclick = toggle; $("#mini-next").onclick = () => next(); $("#mini-prev").onclick = prev;
 const vol = $("#vol"); vol.oninput = () => { paint(vol); eng.volume(vol.value / 100); };
 async function setLang(l) { LANG = l; await saveSettings({ lang: l }); applyLang(); render(); }
-function applyLang() { document.documentElement.lang = LANG; document.querySelectorAll("[data-tr]").forEach((n) => (n.textContent = t(n.dataset.tr))); const sl = $("#splash-line"); if (sl) sl.textContent = t("splash"); if (cur) drawPlayer(); }
+function applyLang() { document.documentElement.lang = LANG; document.querySelectorAll("[data-tr]").forEach((n) => (n.textContent = t(n.dataset.tr))); if (cur) drawPlayer(); }
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { if ($("#sheet").classList.contains("on")) closeSheet(); else if ($("#player").classList.contains("open")) openPlayer(false); else back(); return; }
   if (e.key === "F11") { e.preventDefault(); if (!MOCK) { const w = TAURI.window.getCurrentWindow(); w.isFullscreen().then((f) => w.setFullscreen(!f)); } return; }
@@ -685,6 +713,48 @@ async function welcomeClick(e) {
   }
 }
 
+// ---------------------------------------------------------------- opening, exactly like the app's OpeningReveal
+const MARK_PATH = "M83.99,33.47 L83.62,33.34 L82.56,33.78 L81.63,33.96 L80.20,33.96 L78.52,33.53 L77.33,32.97 L75.90,32.04 L73.60,30.23 L72.11,29.24 L69.99,28.36 L68.62,28.18 L67.50,28.24 L66.13,28.74 L65.57,29.24 L65.20,30.17 L65.20,59.04 L65.08,59.66 L64.64,60.72 L63.89,61.84 L63.02,62.77 L61.40,64.02 L59.85,64.89 L58.11,65.57 L56.68,65.95 L54.81,66.20 L52.69,66.20 L51.57,66.07 L49.58,65.64 L48.09,65.14 L45.48,63.83 L43.11,62.09 L41.49,60.47 L40.12,58.67 L39.38,57.42 L38.13,54.50 L37.64,52.57 L37.45,51.26 L37.39,48.65 L37.76,46.04 L38.69,43.11 L40.12,40.37 L41.87,38.01 L43.61,36.20 L45.16,34.90 L46.53,33.96 L48.15,33.03 L50.20,32.10 L50.58,31.60 L50.52,31.04 L50.02,30.60 L48.96,30.36 L46.53,30.36 L44.17,30.73 L41.99,31.29 L39.94,32.04 L37.45,33.22 L35.77,34.21 L34.09,35.40 L32.16,37.01 L29.98,39.25 L28.43,41.24 L27.18,43.17 L25.94,45.60 L25.25,47.28 L24.32,50.45 L23.82,53.69 L23.82,57.11 L24.13,59.48 L24.63,61.65 L25.25,63.58 L26.19,65.76 L27.37,67.94 L28.30,69.37 L30.11,71.67 L32.22,73.85 L33.47,74.91 L35.40,76.28 L36.89,77.15 L38.69,78.02 L41.37,78.95 L43.92,79.51 L45.60,79.70 L47.59,79.76 L49.96,79.57 L52.01,79.20 L54.31,78.52 L56.80,77.46 L58.48,76.52 L59.72,75.72 L61.96,73.91 L63.77,72.04 L64.95,70.55 L65.95,69.06 L66.88,67.38 L67.69,65.51 L68.44,63.21 L68.81,61.47 L69.06,59.48 L69.12,37.26 L69.68,36.95 L71.30,37.01 L72.98,37.57 L75.28,38.69 L76.59,39.07 L78.45,39.13 L79.70,38.88 L81.44,38.01 L82.68,36.83 L83.12,36.20 L83.74,34.90 L83.99,34.03 Z";
+function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = (t) => ((ax * t + bx) * t + cx) * t, Y = (t) => ((ay * t + by) * t + cy) * t, dX = (t) => (3 * ax * t + 2 * bx) * t + cx;
+  return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x; for (let i = 0; i < 8; i++) { const d = dX(t); if (Math.abs(d) < 1e-6) break; t -= (X(t) - x) / d; } t = Math.min(1, Math.max(0, t)); return Y(t); };
+}
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function opening(onDive) {
+  return new Promise((done) => {
+    const cv = $("#opening"); const dpr = Math.min(devicePixelRatio || 1, 2);
+    const fit = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }; fit();
+    const x = cv.getContext("2d"); const mark = new Path2D(MARK_PATH);
+    const SETTLE = 620, HOLD = 120, DIVE = 900, ZOOM = 90, VP = 108;
+    const eSettle = bezier(0.2, 0, 0, 1), eDive = bezier(0.6, 0, 0.85, 0.35);
+    const t0 = performance.now();
+    const frame = (now) => {
+      const fixed = MOCK && /[?&]t=(\d+)/.exec(location.search); const el = fixed ? +fixed[1] : now - t0; const st = eSettle(Math.min(1, el / SETTLE)); const dl = el - SETTLE - HOLD; const d = dl > 0 ? eDive(Math.min(1, dl / DIVE)) : 0;
+      const W = innerWidth, H = innerHeight; x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W, H);
+      const base = 240 / VP; const breathe = 1 + 0.05 * Math.sin(Math.PI * st); const s = base * breathe * Math.exp(Math.log(ZOOM) * d * d);
+      const win = smooth(0.04, 0.28, d), fade = 1 - smooth(0.8, 1, d);
+      x.globalCompositeOperation = "source-over"; x.globalAlpha = fade; x.fillStyle = "#000"; x.fillRect(0, 0, W, H);
+      x.translate(W / 2 - (VP / 2) * s, H / 2 - (VP / 2) * s); x.scale(s, s);
+      x.globalAlpha = 1 - win; x.fillStyle = "#fff"; x.fill(mark);
+      if (st >= 0.05 && st <= 0.98 && d === 0) { // a band of light runs across the mark as it settles
+        const gx = -30 + 170 * st; const g = x.createLinearGradient(gx - 18, 30, gx + 18, 78);
+        g.addColorStop(0, "rgba(218,218,218,0)"); g.addColorStop(0.5, "rgba(218,218,218,.9)"); g.addColorStop(1, "rgba(218,218,218,0)");
+        x.save(); x.clip(mark); x.globalAlpha = 1; x.globalCompositeOperation = "source-atop"; x.fillStyle = g; x.fillRect(0, 0, VP, VP); x.restore();
+      }
+      if (win > 0) { x.globalCompositeOperation = "destination-out"; x.globalAlpha = win; x.fillStyle = "#000"; x.fill(mark); x.globalCompositeOperation = "source-over"; }
+      if (fade > 0) { x.globalAlpha = fade; x.strokeStyle = "#fff"; x.lineJoin = "round"; x.lineWidth = 2.5 / s; x.stroke(mark); }
+      onDive(dl > 0 ? d : 0);
+      if (fixed) return; if (dl < DIVE) requestAnimationFrame(frame); else { onDive(1); cv.remove(); done(); }
+    };
+    requestAnimationFrame(frame);
+  });
+}
+function appDive(d) { // the app comes forward as it's revealed (1.14 → 1)
+  const s = d >= 1 ? "" : `scale(${1.14 - 0.14 * (1 - (1 - d) * (1 - d))})`;
+  $("#app").style.transform = s; $("#chrome").style.transform = s;
+}
+
 // ---------------------------------------------------------------- start
 (async function init() {
   try { setState(await api.invoke("get_state")); } catch (e) { toast(String(e)); }
@@ -701,6 +771,6 @@ async function welcomeClick(e) {
   if (MOCK && h === "menu") { playList(demo, 0); setTimeout(() => songMenu(demo[2]), 100); }
   if (MOCK && (h === "home" || h === "library")) { playList(demo, 0, "Noches"); setTimeout(() => setPlaying(true)); }
   if (!S.settings.onboarded) showWelcome(MOCK ? +((h.match(/welcome(\d)/) || [0, 0])[1]) : 0);
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  setTimeout(() => { const sp = $("#splash"); if (!sp) return; sp.classList.add("out"); setTimeout(() => sp.remove(), 1200); }, reduce ? 150 : MOCK && h ? 0 : 2300);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || (MOCK && h)) { $("#opening").remove(); return; }
+  appDive(0); opening(appDive);
 })();

@@ -29,6 +29,7 @@ AstroTune es privado y anónimo por diseño.
 - Copias de seguridad de Android desactivadas y sin permiso para instalar paquetes.
 - Solo se conecta a los servicios que necesita tu reproducción (música, letras, metadatos) y a tu propio servidor si usas uno.
 - No hay cuenta ni identificador de instalación: nada te identifica.
+- Las peticiones de red se identifican solo como "AstroTune": sin versión, sin URL, sin ID de instalación. Letras y metadatos envían únicamente título y artista a su proveedor, de forma anónima.
 - El repositorio es privado.
 
 ## Compilar

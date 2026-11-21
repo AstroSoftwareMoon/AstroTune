@@ -119,9 +119,12 @@ const I18N = {
     wpriv: "Your music, only yours", wprivd: "AstroTune is built around your privacy.", wstart: "Start listening", skip: "Skip", continue: "Continue", back: "Back", tryagain: "Try again",
   },
 };
+const EN_APP = {"liked": "Liked songs", "playnext": "Play next", "addpl": "Add to playlist", "lyrics": "Lyrics", "charts": "Charts", "madeforyou": "Made for you today", "sleep": "Sleep timer", "newrel": "New releases", "recents": "Recents", "history": "History", "queue": "Queue", "playlists": "Playlists", "albums": "Albums", "artists": "Artists", "songs": "Songs", "radio": "Start radio", "addqueue": "Add to queue", "play": "Play", "shuffle": "Shuffle", "foryou": "For you", "wpick": "Pick an artist to start", "wsearch": "Search artists", "continue": "Continue", "skip": "Skip", "wstart": "Start listening", "ph": "Songs, albums, artists", "appearance": "Appearance", "settings": "Settings", "home": "Home", "explore": "Explore", "library": "Library", "search": "Search"};
 let LANG = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
 if (MOCK && /lang=es/.test(location.search)) LANG = "es";
-const t = (k, v) => { let s = I18N[LANG][k] ?? I18N.es[k] ?? k; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
+for (const k in EN_APP) I18N.en[k] = EN_APP[k];
+// Spanish: the app's own translation of the English label when it has one, so both apps read the same.
+const t = (k, v) => { const en = I18N.en[k]; let s = LANG === "es" ? (window.ES_APP && window.ES_APP[en]) || I18N.es[k] || en || k : en ?? I18N.es[k] ?? k; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
 
 const SEEDS = ["#ff0aa0", "#aa00ff", "#e53935", "#ff6f00", "#fdd835", "#43a047", "#00897b", "#039be5", "#3949ab", "#8e24aa", "#d81b60", "#6d4c41"];
 const ARTISTS = ["Bad Bunny", "Rosalía", "Dua Lipa", "The Weeknd", "Taylor Swift", "Quevedo", "Aitana", "Karol G", "Feid", "Billie Eilish", "Coldplay", "Queen", "Daft Punk", "Arctic Monkeys", "Imagine Dragons", "Rauw Alejandro", "C. Tangana", "Estopa", "Linkin Park", "Ed Sheeran", "Mecano", "Amaral", "Metallica", "Shakira"];

@@ -689,6 +689,24 @@ private fun LookStep(picks: List<ExploreFeed.Artist>) {
             { m -> AppSettings.updateTheme { it.copy(mode = m) } },
             Modifier.padding(horizontal = 16.dp),
         )
+        Label("Accent color")
+        FlowRow(
+            Modifier.padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            com.opentune.data.settings.SEED_COLORS.forEach { argb ->
+                val selected = theme.seedColor == argb && !theme.dynamicColor
+                Box(
+                    Modifier.size(44.dp).clip(CircleShape).background(Color(argb))
+                        .border(if (selected) 3.dp else 0.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                        // Picking a colour here turns Material You off, or the wallpaper's colours would hide it.
+                        .clickable { AppSettings.updateTheme { it.copy(seedColor = argb, dynamicColor = false) } }
+                        .semantics { this.selected = selected; role = Role.RadioButton },
+                    contentAlignment = Alignment.Center,
+                ) { if (selected) androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Rounded.Check, null, tint = Color.White, modifier = Modifier.size(22.dp)) }
+            }
+        }
         Label("Glass")
         FlowRow(
             Modifier.padding(horizontal = 16.dp),

@@ -1,0 +1,29 @@
+name: Borrar releases viejas
+
+# Deletes every release (and its tag) except the one named in "keep".
+on:
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "Release to keep, e.g. v2.0.0"
+        required: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      KEEP: ${{ github.event.inputs.keep }}
+    steps:
+      - name: Delete
+        run: |
+          gh release view "$KEEP" >/dev/null
+          gh release list --limit 200 --json tagName --jq '.[].tagName' | while read -r tag; do
+            [ "$tag" = "$KEEP" ] && continue
+            echo "Borrando $tag"
+            gh release delete "$tag" --yes --cleanup-tag
+          done
+          gh release list

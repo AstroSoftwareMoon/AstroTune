@@ -1,0 +1,1 @@
+AstroTune stays private and anonymous (no location, no microphone, no statistics, generic network identity) while sign-in to your accounts and pasting playlist links keep working.

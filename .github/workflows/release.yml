@@ -53,6 +53,56 @@ jobs:
           path: out/*.apk
           if-no-files-found: error
 
+  android-rust:
+    name: Android (Rust, beta)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.0.0 ndk;27.2.12479018
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: pc
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build
+        working-directory: pc
+        run: |
+          export NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
+          npm ci --ignore-scripts
+          npx tauri icon src-tauri/icons/icon.png
+          npx tauri android init --ci
+          npx tauri android build --apk --target aarch64 --target armv7 --ci
+      - name: Sign (debug key) and name
+        run: |
+          mkdir out
+          APK=$(find pc/src-tauri/gen/android -name "*universal*release*.apk" | head -1)
+          echo "APK: $APK"
+          keytool -genkeypair -keystore ks.jks -alias astro -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass astrotune -keypass astrotune -dname "CN=AstroTune"
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          "$BT/zipalign" -p -f 4 "$APK" aligned.apk
+          "$BT/apksigner" sign --ks ks.jks --ks-pass pass:astrotune --out "out/AstroTune-${VERSION}-android-rust-beta.apk" aligned.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-rust
+          path: out/*.apk
+          if-no-files-found: error
+
   pc:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -110,7 +160,8 @@ jobs:
         run: |
           ARGS="--bundles ${{ matrix.bundles }}"
           if [ -n "${{ matrix.target }}" ]; then ARGS="$ARGS --target ${{ matrix.target }}"; fi
-          npx --yes @tauri-apps/cli@2 build $ARGS -- --locked
+          npm ci --ignore-scripts
+          npx tauri build $ARGS -- --locked
       - name: Name the files
         shell: bash
         run: |
@@ -145,7 +196,8 @@ jobs:
 
   publish:
     name: Publicar release
-    needs: [android, pc]
+    needs: [android, pc, android-rust]
+    if: ${{ !cancelled() && needs.android.result == 'success' && needs.pc.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -176,6 +228,7 @@ jobs:
           | Plataforma | Archivo |
           |---|---|
           | 📱 Android (Android Auto, Chromecast, DLNA) | `*-android-universal.apk` (o el de tu arquitectura; `arm64-v8a` en casi todos) |
+          | 📱 Android (Rust, beta) | `*-android-rust-beta.apk`: versión nueva en Rust, con la interfaz de cristal líquido |
           | 📺 Android TV / Google TV | `*-android-tv.apk` |
           | 🪟 Windows 10/11 | `*-windows-x64.exe` |
           | 🐧 Linux | `*-linux-x64.deb` · `.rpm` · `.AppImage` |
@@ -196,6 +249,13 @@ jobs:
 
           <sub>Capturas de la interfaz con datos de ejemplo.</sub>
 
+          ### 📱 En el móvil (Rust)
+
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/m-1-buscar.png?raw=true" width="24%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/m-2-reproductor.png?raw=true" width="24%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/m-3-artistas.png?raw=true" width="24%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/m-4-privacidad.png?raw=true" width="24%">
+
           ## 🔒 Privacidad y seguridad
 
           - Sin cuenta, sin registro, sin identificador de instalación.
@@ -206,7 +266,7 @@ jobs:
 
           ## ⚠️ Importante
 
-          Las builds no llevan certificado de pago: **Windows SmartScreen** y **macOS Gatekeeper** pueden avisar (en macOS: clic derecho → Abrir). El APK de Android está firmado con clave de depuración. Alexa no admite emisión directa: úsala como altavoz Bluetooth.
+          Las builds no llevan certificado de pago: **Windows SmartScreen** y **macOS Gatekeeper** pueden avisar (en macOS: clic derecho → Abrir). Los APK de Android están firmados con clave de depuración (desinstala la versión anterior antes de actualizar). La versión **Rust (beta)** reproduce con el WebView y todavía no tiene Android Auto, Chromecast ni controles en la pantalla de bloqueo: para eso usa la de Kotlin. Alexa no admite emisión directa: úsala como altavoz Bluetooth.
 
           Fork de OpenTune.
           NOTES

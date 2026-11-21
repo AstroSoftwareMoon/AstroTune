@@ -15,13 +15,13 @@ const I18N = {
     imported: "Playlist importada", playall: "Reproducir todo", del: "Eliminar", tracks: "canciones", addto: "Añadir a playlist", added: "Añadida",
     noplayable: "No se pudo reproducir", loading: "Cargando", lyrics: "Letra", nolyr: "Sin letra para esta canción.", lyrload: "Cargando letra...",
     ptitle: "Privada y anónima", pa: "AstroTune no tiene cuenta, no te identifica y no envía estadísticas ni datos tuyos a ningún sitio.",
-    pl1: "Sin cuenta ni identificador de instalación: eres anónimo.", pl2: "Sin ubicación, sin micrófono, sin telemetría.", pl3: "Tu biblioteca, historial y ajustes viven solo en este PC.",
+    pl1: "Sin cuenta ni identificador de instalación: eres anónimo.", pl2: "Sin ubicación, sin micrófono, sin telemetría.", pl3: "Tu biblioteca, historial y ajustes viven solo en este dispositivo.",
     pl4: "La interfaz no puede acceder a internet: solo el núcleo pide música a YouTube Music.",
     off: "Modo sin conexión", offd: "Bloquea todo internet. Solo suena la música ya reproducida (guardada en caché).",
     guest: "Modo invitado", guestd: "Reproduce sin guardar nada en el historial.", hdays: "Borrado automático del historial", hdd: "Elimina lo que supere el tiempo elegido.",
     forever: "Conservar todo", d7: "7 días", d30: "30 días", d90: "90 días",
-    conns: "Dónde se conecta AstroTune", connsd: "Servidores contactados desde que abriste la app. Esta lista no sale de tu PC.", noconn: "Ninguna conexión todavía.", req: "peticiones",
-    clearh: "Borrar historial", erase: "Borrar todo", erased: "¿Borrar todo?", erasedd: "Se eliminan biblioteca, historial, ajustes y caché de este PC y la app se cierra. No se puede deshacer.",
+    conns: "Dónde se conecta AstroTune", connsd: "Servidores contactados desde que abriste la app. Esta lista no sale de tu dispositivo.", noconn: "Ninguna conexión todavía.", req: "peticiones",
+    clearh: "Borrar historial", erase: "Borrar todo", erased: "¿Borrar todo?", erasedd: "Se eliminan biblioteca, historial, ajustes y caché de este dispositivo y la app se cierra. No se puede deshacer.",
     fullscreen: "F11: pantalla completa", yes: "Borrar", close: "Cerrar", badlink: "Enlace no válido" },
   en: { search: "Search", favorites: "Favorites", playlists: "Playlists", history: "History", privacy: "Privacy",
     tag: "Private and anonymous. No account, no tracking, no location.", splash: "PRIVATE · ANONYMOUS",
@@ -31,13 +31,13 @@ const I18N = {
     imported: "Playlist imported", playall: "Play all", del: "Delete", tracks: "songs", addto: "Add to playlist", added: "Added",
     noplayable: "Couldn't play this", loading: "Loading", lyrics: "Lyrics", nolyr: "No lyrics for this song.", lyrload: "Loading lyrics...",
     ptitle: "Private and anonymous", pa: "AstroTune has no account, doesn't identify you and sends no statistics or personal data anywhere.",
-    pl1: "No account and no install ID: you stay anonymous.", pl2: "No location, no microphone, no telemetry.", pl3: "Your library, history and settings live only on this PC.",
+    pl1: "No account and no install ID: you stay anonymous.", pl2: "No location, no microphone, no telemetry.", pl3: "Your library, history and settings live only on this device.",
     pl4: "The interface can't reach the internet: only the core asks YouTube Music for music.",
     off: "Offline mode", offd: "Blocks all internet. Only already played music (cached) plays.",
     guest: "Guest mode", guestd: "Plays without saving anything to history.", hdays: "Delete history automatically", hdd: "Removes anything older than the chosen time.",
     forever: "Keep everything", d7: "7 days", d30: "30 days", d90: "90 days",
-    conns: "Where AstroTune connects", connsd: "Servers reached since you opened the app. This list never leaves your PC.", noconn: "No connections yet.", req: "requests",
-    clearh: "Clear history", erase: "Erase everything", erased: "Erase everything?", erasedd: "Deletes library, history, settings and cache from this PC and closes the app. This can't be undone.",
+    conns: "Where AstroTune connects", connsd: "Servers reached since you opened the app. This list never leaves your device.", noconn: "No connections yet.", req: "requests",
+    clearh: "Clear history", erase: "Erase everything", erased: "Erase everything?", erasedd: "Deletes library, history, settings and cache from this device and closes the app. This can't be undone.",
     fullscreen: "F11: full screen", yes: "Erase", close: "Close", badlink: "Invalid link" },
 };
 Object.assign(I18N.es, {
@@ -45,11 +45,11 @@ Object.assign(I18N.es, {
   foryou: "Para ti", foryoud: "Sugerencias de los artistas que elegiste. Solo se buscan esos nombres.",
   t_shuffle: "Aleatorio", t_prev: "Anterior", t_pp: "Reproducir / pausa", t_next: "Siguiente", t_repeat: "Repetir", t_np: "Pantalla completa del reproductor", t_close: "Cerrar", t_sleep: "Temporizador de apagado",
   min: "min", sleepoff: "Desactivar temporizador", sleepset: "La música se pausará en {n} min", sleepdone: "Temporizador: música pausada",
-  langtastes: "Idioma y gustos", lang: "Idioma", langd: "Cambia el idioma de toda la app al instante.", tastes: "Tus artistas", tastesd: "Solo se guardan en tu PC. Pulsa uno para quitarlo.", addart: "Añadir otro artista...", add: "Añadir", repeatwel: "Ver la bienvenida otra vez",
+  langtastes: "Idioma y gustos", lang: "Idioma", langd: "Cambia el idioma de toda la app al instante.", tastes: "Tus artistas", tastesd: "Solo se guardan en tu dispositivo. Pulsa uno para quitarlo.", addart: "Añadir otro artista...", add: "Añadir", repeatwel: "Ver la bienvenida otra vez",
   wlang: "Elige tu idioma · Choose your language", wlangs: "Puedes cambiarlo cuando quieras en Privacidad.",
   sect: "Tu música, solo tuya", sects: "AstroTune está hecha alrededor de tu privacidad. Esto es lo que garantiza:",
-  sec1: "Sin cuenta, sin registro y sin identificador: nadie sabe quién eres.", sec2: "Ningún dato tuyo sale de tu PC. Biblioteca, historial y ajustes se guardan solo aquí.", sec3: "Sin ubicación, sin micrófono, sin cámara, sin anuncios y sin telemetría.", sec4: "La interfaz está aislada y no puede acceder a internet; solo el núcleo pide la música.", sec5: "Código abierto y sin programas de terceros dentro. Cada descarga incluye su suma SHA-256 para comprobarla.",
-  artt: "¿Qué artistas te gustan?", arts: "Elige los que quieras para que te sugiera música. Se guarda solo en tu PC y no se comparte con nadie.",
+  sec1: "Sin cuenta, sin registro y sin identificador: nadie sabe quién eres.", sec2: "Ningún dato tuyo sale de tu dispositivo. Biblioteca, historial y ajustes se guardan solo aquí.", sec3: "Sin ubicación, sin micrófono, sin cámara, sin anuncios y sin telemetría.", sec4: "La interfaz está aislada y no puede acceder a internet; solo el núcleo pide la música.", sec5: "Código abierto y sin programas de terceros dentro. Cada descarga incluye su suma SHA-256 para comprobarla.",
+  artt: "¿Qué artistas te gustan?", arts: "Elige los que quieras para que te sugiera música. Se guarda solo en tu dispositivo y no se comparte con nadie.",
   prit: "Tu nivel de privacidad", pris: "Puedes cambiarlo cuando quieras en Privacidad.",
   next: "Continuar", back: "Atrás", skip: "Saltar", start: "Empezar",
 });
@@ -58,11 +58,11 @@ Object.assign(I18N.en, {
   foryou: "For you", foryoud: "Suggestions from the artists you picked. Only those names are searched.",
   t_shuffle: "Shuffle", t_prev: "Previous", t_pp: "Play / pause", t_next: "Next", t_repeat: "Repeat", t_np: "Full screen player", t_close: "Close", t_sleep: "Sleep timer",
   min: "min", sleepoff: "Turn off timer", sleepset: "Music will pause in {n} min", sleepdone: "Timer: music paused",
-  langtastes: "Language and tastes", lang: "Language", langd: "Changes the language of the whole app instantly.", tastes: "Your artists", tastesd: "Stored only on this PC. Tap one to remove it.", addart: "Add another artist...", add: "Add", repeatwel: "Show the welcome again",
+  langtastes: "Language and tastes", lang: "Language", langd: "Changes the language of the whole app instantly.", tastes: "Your artists", tastesd: "Stored only on this device. Tap one to remove it.", addart: "Add another artist...", add: "Add", repeatwel: "Show the welcome again",
   wlang: "Elige tu idioma · Choose your language", wlangs: "You can change it any time in Privacy.",
   sect: "Your music, only yours", sects: "AstroTune is built around your privacy. This is what it guarantees:",
-  sec1: "No account, no sign-up and no identifier: nobody knows who you are.", sec2: "None of your data leaves your PC. Library, history and settings are stored only here.", sec3: "No location, no microphone, no camera, no ads and no telemetry.", sec4: "The interface is sealed and can't reach the internet; only the core asks for music.", sec5: "Open source with no third-party programs inside. Every download ships its SHA-256 checksum so you can verify it.",
-  artt: "Which artists do you like?", arts: "Pick any you like so I can suggest music. It's stored only on this PC and shared with nobody.",
+  sec1: "No account, no sign-up and no identifier: nobody knows who you are.", sec2: "None of your data leaves your device. Library, history and settings are stored only here.", sec3: "No location, no microphone, no camera, no ads and no telemetry.", sec4: "The interface is sealed and can't reach the internet; only the core asks for music.", sec5: "Open source with no third-party programs inside. Every download ships its SHA-256 checksum so you can verify it.",
+  artt: "Which artists do you like?", arts: "Pick any you like so I can suggest music. It's stored only on this device and shared with nobody.",
   prit: "Your privacy level", pris: "You can change it any time in Privacy.",
   next: "Continue", back: "Back", skip: "Skip", start: "Start",
 });
@@ -169,6 +169,25 @@ let timer; function debounceSearch(q) {
   }, 350);
 }
 
+// ---------- playback engine ----------
+// Desktop: Rust plays the file (rodio). Mobile: Rust downloads it, the web view plays it.
+const MOBILE = /Android|iPhone|iPad/i.test(navigator.userAgent) || /[?&]mobile/.test(location.search);
+document.documentElement.classList.toggle("mobile", MOBILE);
+const au = MOBILE ? new Audio() : null;
+const eng = MOBILE
+  ? {
+      async play(tr) {
+        if (MOCK) return;
+        const p = await api.invoke("fetch_track", { track: tr });
+        au.src = TAURI.core.convertFileSrc(p); au.volume = vol.value / 100; await au.play();
+      },
+      pause: () => au.pause(), resume: () => au.play(), seek: (s) => { au.currentTime = Math.max(0, s); },
+      volume: (v) => { au.volume = v; api.invoke("set_volume", { volume: v }); },
+    }
+  : {
+      play: (tr) => api.invoke("play", { track: tr }), pause: () => api.invoke("pause"), resume: () => api.invoke("resume"),
+      seek: (s) => api.invoke("seek", { seconds: s }), volume: (v) => api.invoke("set_volume", { volume: v }),
+    };
 // ---------- playback ----------
 function setCover(tr) {
   const url = tr && tr.cover;
@@ -177,6 +196,7 @@ function setCover(tr) {
   $("#bigart").innerHTML = url ? `<img src="${esc(url)}" alt="">` : MARK;
 }
 function showTrack(tr) {
+  if (MOBILE && "mediaSession" in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: tr.title, artist: tr.artist, album: tr.album || "AstroTune", artwork: tr.cover ? [{ src: tr.cover }] : [] });
   cur = tr; $("#bar-title").textContent = tr.title; $("#bar-artist").textContent = tr.artist; $("#np-title").textContent = tr.title; $("#np-artist").textContent = tr.artist;
   setCover(tr); $("#dur").textContent = $("#dur2").textContent = fmt(tr.duration); loadLyrics(tr); render();
 }
@@ -186,25 +206,35 @@ async function loadLyrics(tr) {
 }
 async function playIndex(i) {
   if (!queue.length) return; qi = (i + queue.length) % queue.length; const tr = queue[qi]; showTrack(tr); pos = 0; setPlaying(true);
-  try { await api.invoke("play", { track: tr }); } catch (e) { setPlaying(false); toast(t("noplayable") + ": " + errText(e)); }
+  try { await eng.play(tr); } catch (e) { setPlaying(false); toast(t("noplayable") + ": " + errText(e)); }
 }
 function playList(tracks, i) { queue = tracks.slice(); playIndex(i); }
 function setPlaying(p) { playing = p; $("#pp-i2").innerHTML = $("#pp-i").innerHTML = p ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M7 4l13 8-13 8z"/>'; }
 function next(auto) { if (!queue.length) return; if (auto && repeat) return playIndex(qi); playIndex(shuffle ? Math.floor(Math.random() * queue.length) : qi + 1); }
-$("#pp").onclick = () => { if (!cur) return; if (playing) { api.invoke("pause"); setPlaying(false); } else { api.invoke("resume"); setPlaying(true); } };
-$("#next").onclick = () => next(false); $("#prev").onclick = () => (pos > 4 ? api.invoke("seek", { seconds: 0 }) : playIndex(qi - 1));
+$("#pp").onclick = () => { if (!cur) return; if (playing) { eng.pause(); setPlaying(false); } else { eng.resume(); setPlaying(true); } };
+$("#next").onclick = () => next(false); $("#prev").onclick = () => (pos > 4 ? eng.seek(0) : playIndex(qi - 1));
 $("#shuffle").onclick = (e) => { shuffle = !shuffle; e.currentTarget.classList.toggle("on", shuffle); };
 $("#repeat").onclick = (e) => { repeat = !repeat; e.currentTarget.classList.toggle("on", repeat); };
 document.querySelectorAll("[data-proxy]").forEach((b) => (b.onclick = () => $("#" + b.dataset.proxy).click()));
 const seek = $("#seek"), seek2 = $("#seek2"), vol = $("#vol");
 const paint = (el) => el.style.setProperty("--p", (100 * el.value) / el.max + "%");
 seek.oninput = () => { paint(seek); const d = (cur && cur.duration) || 0; $("#cur").textContent = fmt((seek.value / 1000) * d); };
-seek.onchange = () => { const d = (cur && cur.duration) || 0; api.invoke("seek", { seconds: (seek.value / 1000) * d }); };
+seek.onchange = () => { const d = (cur && cur.duration) || 0; eng.seek((seek.value / 1000) * d); };
 seek2.oninput = () => { paint(seek2); $("#cur2").textContent = fmt((seek2.value / 1000) * ((cur && cur.duration) || 0)); };
-seek2.onchange = () => { api.invoke("seek", { seconds: (seek2.value / 1000) * ((cur && cur.duration) || 0) }); };
-vol.oninput = () => { paint(vol); api.invoke("set_volume", { volume: vol.value / 100 }); };
-listen("player-tick", (p) => { pos = p.pos; if (!seek.matches(":active")) { const d = (cur && cur.duration) || 0; seek.value = d ? Math.min(1000, (p.pos / d) * 1000) : 0; paint(seek); $("#cur").textContent = fmt(p.pos); if (!seek2.matches(":active")) { seek2.value = seek.value; paint(seek2); $("#cur2").textContent = fmt(p.pos); } } if (playing === p.paused) setPlaying(!p.paused); });
+seek2.onchange = () => { eng.seek((seek2.value / 1000) * ((cur && cur.duration) || 0)); };
+vol.oninput = () => { paint(vol); eng.volume(vol.value / 100); };
+const onTick = (p) => { pos = p.pos; if (!seek.matches(":active")) { const d = (cur && cur.duration) || 0; seek.value = d ? Math.min(1000, (p.pos / d) * 1000) : 0; paint(seek); $("#cur").textContent = fmt(p.pos); if (!seek2.matches(":active")) { seek2.value = seek.value; paint(seek2); $("#cur2").textContent = fmt(p.pos); } } if (playing === p.paused) setPlaying(!p.paused); };
+listen("player-tick", onTick);
 listen("player-ended", () => next(true));
+if (MOBILE) {
+  au.ontimeupdate = () => onTick({ pos: au.currentTime, paused: au.paused });
+  au.onended = () => next(true); au.onerror = () => toast(t("noplayable"));
+  if ("mediaSession" in navigator) {
+    const ms = navigator.mediaSession;
+    ms.setActionHandler("play", () => $("#pp").click()); ms.setActionHandler("pause", () => $("#pp").click());
+    ms.setActionHandler("nexttrack", () => $("#next").click()); ms.setActionHandler("previoustrack", () => $("#prev").click());
+  }
+}
 listen("player-error", (m) => toast(String(m)));
 
 // ---------- events ----------
@@ -218,8 +248,8 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "Escape") $("#np").classList.remove("open");
   else if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
   else if (e.code === "Space") { e.preventDefault(); $("#pp").click(); }
-  else if (e.key === "ArrowRight") api.invoke("seek", { seconds: Math.min((cur && cur.duration) || 0, pos + 10) });
-  else if (e.key === "ArrowLeft") api.invoke("seek", { seconds: Math.max(0, pos - 10) });
+  else if (e.key === "ArrowRight") eng.seek(Math.min((cur && cur.duration) || 0, pos + 10));
+  else if (e.key === "ArrowLeft") eng.seek(Math.max(0, pos - 10));
   else if (e.key === "ArrowUp" || e.key === "ArrowDown") { vol.value = Math.max(0, Math.min(100, +vol.value + (e.key === "ArrowUp" ? 5 : -5))); vol.oninput(); }
   else if (e.key === "n") $("#next").click();
   else if (e.key === "p") $("#prev").click();
@@ -275,7 +305,7 @@ $("#view").addEventListener("change", async (e) => { if (e.target.id === "lang")
 let sleepT = null;
 function setSleep(n) {
   clearTimeout(sleepT); $("#sleep").classList.toggle("on", !!n);
-  if (n) { toast(t("sleepset", { n })); sleepT = setTimeout(() => { if (playing) { api.invoke("pause"); setPlaying(false); } $("#sleep").classList.remove("on"); toast(t("sleepdone")); }, n * 60000); } else toast(t("sleepoff"));
+  if (n) { toast(t("sleepset", { n })); sleepT = setTimeout(() => { if (playing) { eng.pause(); setPlaying(false); } $("#sleep").classList.remove("on"); toast(t("sleepdone")); }, n * 60000); } else toast(t("sleepoff"));
 }
 $("#sleep").onclick = (e) => { const r = e.currentTarget.getBoundingClientRect(); const items = [15, 30, 45, 60, 90].map((n) => [n + " " + t("min"), () => setSleep(n)]).concat([[t("sleepoff"), () => setSleep(0)]]); menu(r.left - 100, r.top - items.length * 46 - 16, items); };
 

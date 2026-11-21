@@ -1,0 +1,1 @@
+AstroTune 1.6.0: new Rust interface for PC and a Rust beta for Android, first-run welcome with language and artists, queue, sleep timer and a "For you" section. Private and anonymous: no account, no tracking, nothing leaves your device.

@@ -1,6 +1,6 @@
 [package]
 name = "astrotune-core"
-version = "1.4.0"
+version = "1.6.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
 description = "AstroTune PC core: music client, library store and privacy log. No telemetry."
@@ -8,5 +8,12 @@ description = "AstroTune PC core: music client, library store and privacy log. N
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# Desktop reads the system certificate store; Android has no usable one for rustls, so it bundles roots.
+[target.'cfg(not(target_os = "android"))'.dependencies]
 rustypipe = { version = "0.11", default-features = false, features = ["rustls-tls-native-roots"] }
 rustypipe-downloader = { version = "0.3", default-features = false, features = ["rustls-tls-native-roots"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+rustypipe = { version = "0.11", default-features = false, features = ["rustls-tls-webpki-roots"] }
+rustypipe-downloader = { version = "0.3", default-features = false, features = ["rustls-tls-webpki-roots"] }

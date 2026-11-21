@@ -92,7 +92,7 @@ jobs:
           # Same launcher icon as the Kotlin app (adaptive: black background, AstroTune mark, themed monochrome).
           npx tauri icon src-tauri/icons/app-icon.png
           RES=src-tauri/gen/android/app/src/main/res
-          rm -f $RES/mipmap-anydpi-v26/ic_launcher*.xml $RES/drawable*/ic_launcher_background.xml
+          rm -f $RES/mipmap-anydpi-v26/ic_launcher*.xml $RES/drawable*/ic_launcher_background.xml $RES/drawable*/ic_launcher_foreground.*
           cp -r android-res/. $RES/
           find $RES -name "ic_launcher*" | sort
           npx tauri android build --apk --target aarch64 --target armv7 --ci

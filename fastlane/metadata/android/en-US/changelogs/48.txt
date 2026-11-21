@@ -1,0 +1,1 @@
+First AstroTune release: new name, moon-and-note logo, Astro pink as the default accent, no usage statistics, and updates from the AstroTune repository.

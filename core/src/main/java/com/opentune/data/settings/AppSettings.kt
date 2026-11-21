@@ -853,6 +853,8 @@ data class SettingsState(
 
 /** Accent choices offered when Material You is off. */
 val SEED_COLORS = listOf(
+    0xFFFF0AA0.toInt(), // astro pink
+    0xFFAA00FF.toInt(), // astro violet
     0xFFE53935.toInt(), // red
     0xFFFF6F00.toInt(), // amber
     0xFFFDD835.toInt(), // yellow

@@ -45,7 +45,15 @@ AstroTune es privado y anónimo por diseño.
 
 ## Compilar
 
-Cada push compila el APK de Android (y el workflow "Desktop AstroTune" genera los instaladores de Windows, macOS y Linux) en GitHub Actions (pestaña **Actions** → artefacto `AstroTune-debug-apk`).
+Cada push compila el APK de Android y comprueba la app de PC en GitHub Actions. El workflow **Release AstroTune** genera, en un único lanzamiento y como descargas separadas: Android (móvil), Android TV / Google TV, Windows, Linux y macOS (Apple Silicon e Intel), con `SHA256SUMS.txt`.
+
+### AstroTune para PC (Rust)
+La versión de PC está en `pc/`: Tauri v2 + Rust, con interfaz de cristal líquido, pantalla de inicio animada y carátulas que se adaptan a cualquier resolución. Sin cuenta, sin telemetría, sin ubicación; la interfaz no tiene acceso a internet (CSP estricta) y solo el núcleo Rust consulta YouTube Music. Biblioteca, historial y ajustes se guardan únicamente en tu PC.
+
+### Android Auto, Chromecast y altavoces
+- **Android Auto**: AstroTune aparece como app de música al conectar el móvil al coche.
+- **Chromecast / Google Home / Nest y DLNA**: envía la música desde el selector de transmisión de la app.
+- **Alexa**: no hay API pública para emitir directamente; úsala como altavoz Bluetooth.
 
 En local: `./gradlew :app:assembleDebug` (JDK 21 y Android SDK 37).
 

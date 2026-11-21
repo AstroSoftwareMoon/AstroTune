@@ -1,0 +1,12 @@
+[package]
+name = "astrotune-core"
+version = "1.4.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "AstroTune PC core: music client, library store and privacy log. No telemetry."
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rustypipe = { version = "0.11", default-features = false, features = ["rustls-tls-native-roots"] }
+rustypipe-downloader = { version = "0.3", default-features = false, features = ["rustls-tls-native-roots"] }

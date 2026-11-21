@@ -18,7 +18,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.opentune.tv"
+        applicationId = "com.astrotune.tv"
         // Android 8.0, the same floor as :core.
         minSdk = 26
         targetSdk = 36

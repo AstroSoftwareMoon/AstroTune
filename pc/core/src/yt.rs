@@ -9,6 +9,7 @@
 //! that's why every stream carries its `ua`.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 
 use serde_json::{json, Value};
 
@@ -25,8 +26,20 @@ pub struct Client {
     pub sdk: Option<u32>,
 }
 
-/// Same identities and versions as the Android app, in the order it walks them.
+/// Same identities and versions as the Android app, in the order it walks them
+/// (StreamResolver.kt: ANDROID_MUSIC first, the one googlevideo still serves without a token).
 pub const CLIENTS: &[Client] = &[
+    Client {
+        name: "ANDROID_MUSIC",
+        version: "8.39.42",
+        id: "21",
+        ua: "com.google.android.apps.youtube.music/8.39.42 (Linux; U; Android 15; en_US; Pixel 9 Pro; Build/AP4A.250205.002) gzip",
+        os_name: "Android",
+        os_version: "15",
+        make: "Google",
+        model: "Pixel 9 Pro",
+        sdk: Some(35),
+    },
     Client {
         name: "ANDROID_VR",
         version: "1.65.10",
@@ -71,20 +84,71 @@ pub const CLIENTS: &[Client] = &[
         model: "iPhone16,2",
         sdk: None,
     },
-    Client {
-        name: "ANDROID_MUSIC",
-        version: "8.39.42",
-        id: "21",
-        ua: "com.google.android.apps.youtube.music/8.39.42 (Linux; U; Android 15; en_US; Pixel 9 Pro; Build/AP4A.250205.002) gzip",
-        os_name: "Android",
-        os_version: "15",
-        make: "Google",
-        model: "Pixel 9 Pro",
-        sdk: Some(35),
-    },
 ];
 
 static LAST_GOOD: AtomicUsize = AtomicUsize::new(0);
+static VISITOR: Mutex<Option<String>> = Mutex::new(None);
+
+const WEB_UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+
+/// A visitor id, minted from the web player's service-worker bootstrap like the app does
+/// (Innertube.kt fetchVisitorData). Without one, more identities are asked to sign in.
+async fn visitor(http: &reqwest::Client, refresh: bool) -> Option<String> {
+    if !refresh {
+        if let Some(v) = VISITOR.lock().unwrap().clone() {
+            return Some(v);
+        }
+    }
+    let body = http.get("https://www.youtube.com/sw.js_data").header("User-Agent", WEB_UA).send().await.ok()?.text().await.ok()?;
+    let v = find_visitor(&body)?;
+    *VISITOR.lock().unwrap() = Some(v.clone());
+    Some(v)
+}
+
+fn find_visitor(body: &str) -> Option<String> {
+    // Protobuf-in-base64 starting "Cg", 40+ chars; nothing else in there has that shape.
+    let b = body.as_bytes();
+    let mut i = 0;
+    while i + 2 < b.len() {
+        if b[i] == b'"' && b[i + 1] == b'C' && b[i + 2] == b'g' {
+            let rest = &body[i + 1..];
+            let end = rest.find('"').unwrap_or(0);
+            let cand = &rest[..end];
+            if cand.len() >= 42 && cand.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-' || c == b'%') {
+                return Some(cand.to_string());
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// Whether googlevideo really serves this URL: a 2 MB range (the size playback asks for, since a
+/// doubted session passes small probes and fails big ones), audio back, and bytes that arrive.
+async fn probe(http: &reqwest::Client, s: &Stream) -> bool {
+    use futures_util::StreamExt;
+    let r = http.get(&s.url).header("Range", "bytes=0-2097151").header("User-Agent", &s.ua).send().await;
+    let Ok(resp) = r else { return false };
+    if !resp.status().is_success() {
+        return false;
+    }
+    let audio = resp.headers().get("content-type").and_then(|v| v.to_str().ok()).is_some_and(|t| t.starts_with("audio/"));
+    if !audio {
+        return false;
+    }
+    let mut body = resp.bytes_stream();
+    let mut got = 0usize;
+    let read = async {
+        while let Some(Ok(c)) = body.next().await {
+            got += c.len();
+            if got >= 16 * 1024 {
+                return true;
+            }
+        }
+        false
+    };
+    tokio::time::timeout(std::time::Duration::from_secs(8), read).await.unwrap_or(false)
+}
 
 #[derive(Clone, Debug)]
 pub struct Stream {
@@ -105,7 +169,7 @@ fn pick(formats: &[Value], opus_first: bool) -> Option<&Value> {
     formats.iter().find(|f| f["mimeType"].as_str().is_some_and(|m| m.starts_with("audio/")) && f["url"].is_string())
 }
 
-async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_first: bool) -> Result<Stream, String> {
+async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_first: bool, visitor: Option<&str>) -> Result<Stream, String> {
     let mut client = json!({
         "clientName": c.name, "clientVersion": c.version, "osName": c.os_name, "osVersion": c.os_version,
         "deviceMake": c.make, "deviceModel": c.model, "hl": hl, "gl": "US",
@@ -113,12 +177,19 @@ async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_
     if let Some(s) = c.sdk {
         client["androidSdkVersion"] = json!(s);
     }
+    if let Some(v) = visitor {
+        client["visitorData"] = json!(v);
+    }
     let body = json!({ "context": { "client": client }, "videoId": video_id, "contentCheckOk": true, "racyCheckOk": true });
-    let resp = http
+    let mut req = http
         .post("https://www.youtube.com/youtubei/v1/player?prettyPrint=false")
         .header("User-Agent", c.ua)
         .header("X-YouTube-Client-Name", c.id)
-        .header("X-YouTube-Client-Version", c.version)
+        .header("X-YouTube-Client-Version", c.version);
+    if let Some(v) = visitor {
+        req = req.header("X-Goog-Visitor-Id", v);
+    }
+    let resp = req
         .json(&body)
         .send()
         .await
@@ -142,18 +213,32 @@ async fn ask(http: &reqwest::Client, c: &Client, video_id: &str, hl: &str, opus_
     })
 }
 
-/// Walks the identities, starting with the one that worked last time.
+/// Walks the identities, starting with the one that worked last time. A URL counts only once
+/// googlevideo has actually served it (see [probe]); a bot check gets one fresh visitor id.
 pub async fn stream(http: &reqwest::Client, video_id: &str, hl: &str, opus_first: bool) -> Result<Stream, String> {
     let start = LAST_GOOD.load(Ordering::Relaxed);
     let mut errors = Vec::new();
+    let mut v = visitor(http, false).await;
+    let mut refreshed = false;
     for k in 0..CLIENTS.len() {
         let i = (start + k) % CLIENTS.len();
-        match ask(http, &CLIENTS[i], video_id, hl, opus_first).await {
+        let c = &CLIENTS[i];
+        match ask(http, c, video_id, hl, opus_first, v.as_deref()).await {
             Ok(s) => {
-                LAST_GOOD.store(i, Ordering::Relaxed);
-                return Ok(s);
+                if probe(http, &s).await {
+                    LAST_GOOD.store(i, Ordering::Relaxed);
+                    return Ok(s);
+                }
+                errors.push(format!("{} {}: refused by googlevideo", c.name, c.version));
             }
-            Err(e) => errors.push(e),
+            Err(e) => {
+                let l = e.to_lowercase();
+                if !refreshed && (l.contains("bot") || l.contains("sign in") || l.contains("login_required")) && !l.contains("confirm your age") {
+                    refreshed = true;
+                    v = visitor(http, true).await.or(v);
+                }
+                errors.push(e)
+            }
         }
     }
     Err(errors.join(" · "))

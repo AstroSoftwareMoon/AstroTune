@@ -59,19 +59,19 @@ fn hdr(k: &str, v: &str) -> Header {
 
 /// A blocking reader over chunks that an async task pushes in.
 struct ChanReader {
-    rx: mpsc::Receiver<Vec<u8>>,
+    rx: tokio::sync::mpsc::Receiver<Vec<u8>>,
     buf: Vec<u8>,
     pos: usize,
 }
 impl Read for ChanReader {
     fn read(&mut self, out: &mut [u8]) -> std::io::Result<usize> {
         while self.pos >= self.buf.len() {
-            match self.rx.recv() {
-                Ok(b) => {
+            match self.rx.blocking_recv() {
+                Some(b) => {
                     self.buf = b;
                     self.pos = 0;
                 }
-                Err(_) => return Ok(0),
+                None => return Ok(0),
             }
         }
         let n = out.len().min(self.buf.len() - self.pos);
@@ -241,7 +241,7 @@ impl Hub {
             if let Some(total) = st.size.filter(|n| *n > 0) {
                 let (start, end) = range.as_deref().and_then(|r| parse_range(r, total)).unwrap_or((0, total - 1));
                 let partial = range.is_some();
-                let (tx, rx) = mpsc::sync_channel::<Vec<u8>>(16);
+                let (tx, rx) = tokio::sync::mpsc::channel::<Vec<u8>>(16);
                 let hub = self.clone();
                 let id2 = id.clone();
                 tauri::async_runtime::spawn(async move {
@@ -260,7 +260,7 @@ impl Hub {
             }
         }
         let (tx_head, rx_head) = mpsc::channel::<Result<(u16, Vec<(String, String)>, Option<usize>), String>>();
-        let (tx, rx) = mpsc::sync_channel::<Vec<u8>>(32);
+        let (tx, rx) = tokio::sync::mpsc::channel::<Vec<u8>>(32);
         let hub = self.clone();
         tauri::async_runtime::spawn(async move {
             let mut fresh = false;
@@ -310,7 +310,8 @@ impl Hub {
                 while let Some(chunk) = body.next().await {
                     match chunk {
                         Ok(b) => {
-                            if tx.send(b.to_vec()).is_err() {
+                            // Awaited, not blocking: a paused player must not hold a runtime thread.
+                            if tx.send(b.to_vec()).await.is_err() {
                                 return;
                             }
                         }
@@ -359,7 +360,7 @@ fn serve_file(req: Request, path: PathBuf, range: Option<String>) {
 /// Streams `[start, end]` of a song to `tx` in 2 MB ranges, each asked for with the identity
 /// that minted the URL. A range that fails (stale address, dropped connection) is asked for
 /// again with a fresh address, so a song never stops half way.
-pub async fn pump<F, Fut>(net: &astrotune_core::net::Net, mut get_stream: F, start: u64, end: u64, tx: std::sync::mpsc::SyncSender<Vec<u8>>)
+pub async fn pump<F, Fut>(net: &astrotune_core::net::Net, mut get_stream: F, start: u64, end: u64, tx: tokio::sync::mpsc::Sender<Vec<u8>>)
 where
     F: FnMut(bool) -> Fut,
     Fut: std::future::Future<Output = Result<astrotune_core::yt::Stream, String>>,
@@ -389,7 +390,8 @@ where
                     match chunk {
                         Ok(b) => {
                             got += b.len() as u64;
-                            if tx.send(b.to_vec()).is_err() {
+                            // Awaited, not blocking: a paused player must not hold a runtime thread.
+                            if tx.send(b.to_vec()).await.is_err() {
                                 return; // the listener went away
                             }
                         }

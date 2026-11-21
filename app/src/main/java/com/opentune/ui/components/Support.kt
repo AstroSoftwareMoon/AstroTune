@@ -72,6 +72,7 @@ object Support {
         STAR(5, "askedAt", "done"),
         DISCORD(10, "discordAskedAt", "discordDone"),
     }
+    private const val ASK_NOTHING = true
     private val MIN_GAP_MS = TimeUnit.DAYS.toMillis(30)
     private val APART_MS = TimeUnit.DAYS.toMillis(14)
     private fun prefs(context: Context) = context.getSharedPreferences("support", Context.MODE_PRIVATE)
@@ -85,7 +86,8 @@ object Support {
 
     /** The invitation that's due now, if any; the star first when both are. */
     fun due(context: Context, now: Long = System.currentTimeMillis()): Invite? {
-        if (!com.opentune.data.config.RemoteConfig.current.communityPrompts) return null
+        // AstroTune asks for nothing: no star, no Discord, no donations to OpenTune's author.
+        if (ASK_NOTHING || !com.opentune.data.config.RemoteConfig.current.communityPrompts) return null
         val p = prefs(context)
         val other = Invite.entries.maxOf { p.getLong(it.askedKey, 0) }
         return Invite.entries.firstOrNull { invite ->

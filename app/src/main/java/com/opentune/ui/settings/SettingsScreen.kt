@@ -1821,7 +1821,7 @@ private fun settingsSections(
                 Entry("Show the welcome again", "welcome onboarding first run start intro pick artists setup") {
                     NavRow("Show the welcome again", { com.opentune.data.Welcome.showAgain() }, summary = "Pick artists, choose a look and sign in, as on the first start", icon = Icons.Rounded.WavingHand)
                 },
-                Entry("Check for updates", "new version release download github") {
+                Entry("Check for updates", "new version release download") {
                     NavRow("Check for updates", {
                         // A release already found opens at once; Update still looks for a newer one first.
                         pendingUpdate?.let { update = it; return@NavRow }
@@ -1829,14 +1829,14 @@ private fun settingsSections(
                             when (val r = UpdateCheck.checkNow(context)) {
                                 is UpdateCheck.Result.Newer -> update = r.release
                                 UpdateCheck.Result.UpToDate -> message = com.opentune.i18n.Tr.f("You have the latest version ({0}).", BuildConfig.VERSION_NAME)
-                                UpdateCheck.Result.NoReleases -> message = "No releases are published yet. Builds are on the GitHub branch for now."
+                                UpdateCheck.Result.NoReleases -> message = "No releases are published yet."
                                 is UpdateCheck.Result.Failed -> message = com.opentune.i18n.Tr.f("Couldn't check: {0}", r.reason)
                             }
                         }
                     }, summary = pendingUpdate?.let { com.opentune.i18n.Tr.f("AstroTune {0} is ready to install. You have {1}.", it.version, BuildConfig.VERSION_NAME) } ?: com.opentune.i18n.Tr.f("Current version: {0}", BuildConfig.VERSION_NAME), icon = Icons.Rounded.SystemUpdate, dot = pendingUpdate != null)
                 },
                 Entry("Check for updates automatically", "update new version release auto") {
-                    ToggleRow("Check for updates automatically", ui.checkForUpdates, { v -> AppSettings.updateUi { it.copy(checkForUpdates = v) }; com.opentune.data.UpdateCheck.schedule(context) }, summary = "Looks for a new release on GitHub every few hours, in the background too, and offers to install it", icon = Icons.Rounded.SystemUpdate)
+                    ToggleRow("Check for updates automatically", ui.checkForUpdates, { v -> AppSettings.updateUi { it.copy(checkForUpdates = v) }; com.opentune.data.UpdateCheck.schedule(context) }, summary = "Looks for a new release every few hours, in the background too, and offers to install it", icon = Icons.Rounded.SystemUpdate)
                 },
                 Entry("Private and anonymous", "anonymous privacy telemetry statistics location data private tracking") {
                     NavRow(
@@ -1845,10 +1845,6 @@ private fun settingsSections(
                         summary = "AstroTune sends no usage statistics, asks for no location and has no account or tracking. No ID of any kind leaves this phone.",
                         icon = Icons.Rounded.Info,
                     )
-                },
-                Entry("AstroTune community", "github discord community addons developer") { CommunityBanner() },
-                Entry("Support AstroTune", "donate upi pay money tip support developer") {
-                    NavRow("Support AstroTune", { supportDialog = true }, summary = "A small thank-you helps keep AstroTune going", icon = Icons.Rounded.Favorite)
                 },
                 Entry("Offline mode", "offline no internet block network private") {
                     val v by com.opentune.AstroPrivacy.offline.collectAsState()
@@ -1909,39 +1905,8 @@ private fun settingsSections(
                 Entry("Your data stays here", "privacy anonymous private data stays on device") {
                     NavRow("Your data stays here", {}, summary = "Private by design: your library, history and settings stay on this phone. Nothing is uploaded, nothing is tracked, you stay anonymous.", icon = Icons.Rounded.Info)
                 },
-                Entry("Star on GitHub", "star github rate like") {
-                    NavRow("Star on GitHub", {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, com.opentune.ui.components.Support.REPO.toUri())) }
-                    }, summary = "Helps other people find AstroTune", icon = Icons.Rounded.Star)
-                },
-                Entry("Source code", "github open source license gpl") {
-                    NavRow("Source code", {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/justshivv/Opentune".toUri())) }
-                    }, summary = "github.com/justshivv/Opentune · GPL v3", icon = Icons.Rounded.Code)
-                },
-                Entry("justshivv", "github developer creator justshivv") {
-                    SettingRow(
-                        "justshivv",
-                        icon = null,
-                        leading = { Artwork("https://avatars.githubusercontent.com/u/78946189?v=4", Modifier.size(28.dp), CircleShape) },
-                        trailing = {
-                            IconButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/justshivv".toUri())) } }) {
-                                Icon(githubLogo, "GitHub", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        },
-                    )
-                },
-                Entry("aerluc", "github developer aerluc") {
-                    SettingRow(
-                        "aerluc",
-                        icon = null,
-                        leading = { Artwork("https://avatars.githubusercontent.com/u/122277259?v=4", Modifier.size(28.dp), CircleShape) },
-                        trailing = {
-                            IconButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/aerluc".toUri())) } }) {
-                                Icon(githubLogo, "GitHub", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        },
-                    )
+                Entry("Based on OpenTune", "credits open source license gpl opentune developers") {
+                    NavRow("Based on OpenTune", {}, summary = "AstroTune is built on OpenTune, by justshivv and aerluc. Free software under the GPL v3.", icon = Icons.Rounded.Code)
                 },
                 Entry("Export diagnostics", "log share troubleshooting bug report") {
                     NavRow("Export diagnostics", {

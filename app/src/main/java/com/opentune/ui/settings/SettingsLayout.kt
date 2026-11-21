@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.Animation
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.Palette
@@ -143,11 +144,19 @@ internal val SETTINGS_CATEGORIES = listOf(
         ),
     ),
     SettingsCategory(
-        "about", "About", "Updates, source code and diagnostics", Icons.Rounded.Info,
+        "privacy", "Privacy and security", "App lock, guest and offline modes, what leaves the phone", Icons.Rounded.Lock,
+        listOf(
+            "Lock" to listOf("Lock AstroTune", "Hide in recent apps"),
+            "Private listening" to listOf("Guest mode", "Offline mode", "Delete history automatically"),
+            "Transparency" to listOf("Private and anonymous", "Your data stays here", "Where AstroTune connects"),
+            "Erase" to listOf("Erase everything"),
+        ),
+    ),
+    SettingsCategory(
+        "about", "About", "Updates, credits and diagnostics", Icons.Rounded.Info,
         listOf(
             "Updates" to listOf("What's new", "Check for updates", "Check for updates automatically"),
-            "Community" to listOf("AstroTune community", "Support AstroTune", "Star on GitHub", "Source code"),
-            "Developers" to listOf("justshivv", "aerluc"),
+            "Credits" to listOf("Based on OpenTune"),
             "Help" to listOf("Show the welcome again", "Count this phone in usage numbers", "Export diagnostics"),
         ),
     ),
@@ -155,7 +164,7 @@ internal val SETTINGS_CATEGORIES = listOf(
 
 /** How the main Settings page groups its pages: what's yours, how it sounds, how it looks, the app. */
 internal val SETTINGS_HOME = listOf(
-    "You" to listOf("account", "history"),
+    "You" to listOf("account", "privacy", "history"),
     "Listening" to listOf("audio", "playback", "lyrics"),
     "Look and feel" to listOf("look", "player", "motion"),
     "Your music" to listOf("library", "data"),

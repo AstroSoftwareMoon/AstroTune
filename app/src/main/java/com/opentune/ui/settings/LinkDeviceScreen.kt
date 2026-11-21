@@ -75,13 +75,12 @@ import com.opentune.ui.components.SheetButton
 import com.opentune.ui.components.SheetTone
 import com.opentune.ui.components.rememberHaptics
 
-/** The other screens OpenTune can reach from this one. */
+/** The other screens AstroTune can reach from this one. */
 internal enum class LinkTarget(val label: String, val icon: ImageVector) {
     TV("TV", Icons.Rounded.Tv),
     COMPUTER("Computer", Icons.Rounded.Laptop),
     SPEAKER("Speaker", Icons.Rounded.Speaker),
     FRIEND("Friend", Icons.Rounded.Groups),
-    WATCH("Watch", Icons.Rounded.Watch),
 }
 
 /**
@@ -154,26 +153,12 @@ fun LinkDeviceScreen(
                     when (shown) {
                         LinkTarget.TV -> TvSteps(signedIn, onSignIn, ::camera, ::open, ::share, onRemote)
                         LinkTarget.COMPUTER -> DeviceCard(
-                            "In your browser",
-                            "Browse, search and listen on a computer. Your library there stays in that browser.",
+                            "AstroTune for PC",
+                            "The same app on a computer: the same screens, lyrics, mixes and settings, made from this one.",
                         ) {
-                            Step(1, "Open the web player", "On the computer, go to the address below, or send it there from this phone.") {
-                                Text(
-                                    WEB_PLAYER.removePrefix("https://"),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                                )
-                                Buttons(
-                                    { SheetButton("Share", onClick = { share(WEB_PLAYER) }, icon = Icons.Rounded.Share, tone = SheetTone.Primary) },
-                                    { SheetButton("Open here", onClick = { open(WEB_PLAYER) }, icon = Icons.AutoMirrored.Rounded.OpenInNew) },
-                                )
-                            }
-                            Step(2, "Add the companion extension", "It lets the page reach YouTube Music from your own browser. Choose Get the Extension in the web player.", last = true)
-                            Note(Icons.Rounded.Lock, "A preview. What you save there stays in that browser; it doesn't sync with this phone.")
+                            Step(1, "Install it on the computer", "There's a version for Windows, macOS and Linux, from the same place you got this app.")
+                            Step(2, "Listen there", "Search, play and save songs just like here, with the keyboard and the mouse.", last = true)
+                            Note(Icons.Rounded.Lock, "Private like this phone: what you save there stays on that computer.")
                         }
                         LinkTarget.SPEAKER -> DeviceCard(
                             "On a speaker or smart TV",
@@ -191,14 +176,6 @@ fun LinkDeviceScreen(
                             Step(1, "Start a room", "You get a code and a link to send.")
                             Step(2, "Your friend joins", "They open the link, or type the code in AstroTune.", last = true) {
                                 Buttons({ SheetButton("Listen together", onClick = onTogether, icon = Icons.Rounded.Groups, tone = SheetTone.Primary) })
-                            }
-                        }
-                        LinkTarget.WATCH -> DeviceCard(
-                            "On your watch",
-                            "A separate Wear OS app plays on the watch itself, over its Wi-Fi or LTE and Bluetooth headphones, with no phone needed.",
-                        ) {
-                            Step(1, "Build the watch app", "It isn't in the releases yet. It's the wear folder in the source code.", last = true) {
-                                Buttons({ SheetButton("Source code", onClick = { open(SOURCE) }, icon = Icons.Rounded.Code) })
                             }
                         }
                     }
@@ -223,12 +200,7 @@ private fun TvSteps(
         Buttons({ SheetButton("Control the TV", onClick = onRemote, icon = Icons.Rounded.Tv, tone = SheetTone.Primary) })
     }
     DeviceCard("Android TV", "Sign the TV in with this phone's YouTube Music account. No typing with the remote.") {
-        Step(1, "Install AstroTune for TV", "A separate app made for the remote. Get OpenTune-TV from the latest release.") {
-            Buttons(
-                { SheetButton("Get the app", onClick = { open(RELEASES) }, icon = Icons.Rounded.Download) },
-                { SheetButton("Share", onClick = { share(RELEASES) }, icon = Icons.Rounded.Share) },
-            )
-        }
+        Step(1, "Install AstroTune for TV", "A separate app made for the remote: the Android TV file, from the same place you got this app.")
         Step(2, "Show the code on the TV", "On the TV, open Settings, then Account, and choose Sign in.")
         Step(3, "Scan it with this phone", "Scan it right here in AstroTune, or with the phone's own camera app, then approve on this phone.", last = true) {
             if (signedIn) {
@@ -353,6 +325,3 @@ private fun Note(icon: ImageVector, text: String) {
     }
 }
 
-private val WEB_PLAYER get() = com.opentune.data.config.RemoteConfig.current.web
-private const val RELEASES = "https://github.com/justshivv/Opentune/releases/latest"
-private const val SOURCE = "https://github.com/justshivv/Opentune/tree/main/wear"

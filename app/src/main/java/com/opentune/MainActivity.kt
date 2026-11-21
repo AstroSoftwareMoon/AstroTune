@@ -43,8 +43,7 @@ class MainActivity : ComponentActivity() {
         if (r.resultCode == RESULT_OK) findViewById<android.view.View>(android.R.id.content).visibility = android.view.View.VISIBLE else finishAffinity()
     }
 
-    override fun onStart() {
-        super.onStart()
+    private fun checkLock() {
         if (!AstroPrivacy.lock.value || authenticating) return
         val away = android.os.SystemClock.elapsedRealtime() - lastLeft
         if (lastLeft != 0L && away < 15_000) return
@@ -136,6 +135,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        checkLock()
         com.opentune.ui.components.GlassPerformance.watch(this)
         com.opentune.data.history.AccountHistory.syncSoon()
         // The process may have started in the background, offline (after an update, say).

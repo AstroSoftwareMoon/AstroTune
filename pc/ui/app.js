@@ -40,17 +40,44 @@ const I18N = {
     clearh: "Clear history", erase: "Erase everything", erased: "Erase everything?", erasedd: "Deletes library, history, settings and cache from this PC and closes the app. This can't be undone.",
     fullscreen: "F11: full screen", yes: "Erase", close: "Close", badlink: "Invalid link" },
 };
-const L = I18N[(navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es"];
-const t = (k) => L[k] ?? k;
+Object.assign(I18N.es, {
+  queue: "Cola", noqueue: "La cola está vacía. Reproduce algo para empezar.", fav: "Favorita",
+  foryou: "Para ti", foryoud: "Sugerencias de los artistas que elegiste. Solo se buscan esos nombres.",
+  t_shuffle: "Aleatorio", t_prev: "Anterior", t_pp: "Reproducir / pausa", t_next: "Siguiente", t_repeat: "Repetir", t_np: "Pantalla completa del reproductor", t_close: "Cerrar", t_sleep: "Temporizador de apagado",
+  min: "min", sleepoff: "Desactivar temporizador", sleepset: "La música se pausará en {n} min", sleepdone: "Temporizador: música pausada",
+  langtastes: "Idioma y gustos", lang: "Idioma", langd: "Cambia el idioma de toda la app al instante.", tastes: "Tus artistas", tastesd: "Solo se guardan en tu PC. Pulsa uno para quitarlo.", addart: "Añadir otro artista...", add: "Añadir", repeatwel: "Ver la bienvenida otra vez",
+  wlang: "Elige tu idioma · Choose your language", wlangs: "Puedes cambiarlo cuando quieras en Privacidad.",
+  sect: "Tu música, solo tuya", sects: "AstroTune está hecha alrededor de tu privacidad. Esto es lo que garantiza:",
+  sec1: "Sin cuenta, sin registro y sin identificador: nadie sabe quién eres.", sec2: "Ningún dato tuyo sale de tu PC. Biblioteca, historial y ajustes se guardan solo aquí.", sec3: "Sin ubicación, sin micrófono, sin cámara, sin anuncios y sin telemetría.", sec4: "La interfaz está aislada y no puede acceder a internet; solo el núcleo pide la música.", sec5: "Código abierto y sin programas de terceros dentro. Cada descarga incluye su suma SHA-256 para comprobarla.",
+  artt: "¿Qué artistas te gustan?", arts: "Elige los que quieras para que te sugiera música. Se guarda solo en tu PC y no se comparte con nadie.",
+  prit: "Tu nivel de privacidad", pris: "Puedes cambiarlo cuando quieras en Privacidad.",
+  next: "Continuar", back: "Atrás", skip: "Saltar", start: "Empezar",
+});
+Object.assign(I18N.en, {
+  queue: "Queue", noqueue: "The queue is empty. Play something to start.", fav: "Favorite",
+  foryou: "For you", foryoud: "Suggestions from the artists you picked. Only those names are searched.",
+  t_shuffle: "Shuffle", t_prev: "Previous", t_pp: "Play / pause", t_next: "Next", t_repeat: "Repeat", t_np: "Full screen player", t_close: "Close", t_sleep: "Sleep timer",
+  min: "min", sleepoff: "Turn off timer", sleepset: "Music will pause in {n} min", sleepdone: "Timer: music paused",
+  langtastes: "Language and tastes", lang: "Language", langd: "Changes the language of the whole app instantly.", tastes: "Your artists", tastesd: "Stored only on this PC. Tap one to remove it.", addart: "Add another artist...", add: "Add", repeatwel: "Show the welcome again",
+  wlang: "Elige tu idioma · Choose your language", wlangs: "You can change it any time in Privacy.",
+  sect: "Your music, only yours", sects: "AstroTune is built around your privacy. This is what it guarantees:",
+  sec1: "No account, no sign-up and no identifier: nobody knows who you are.", sec2: "None of your data leaves your PC. Library, history and settings are stored only here.", sec3: "No location, no microphone, no camera, no ads and no telemetry.", sec4: "The interface is sealed and can't reach the internet; only the core asks for music.", sec5: "Open source with no third-party programs inside. Every download ships its SHA-256 checksum so you can verify it.",
+  artt: "Which artists do you like?", arts: "Pick any you like so I can suggest music. It's stored only on this PC and shared with nobody.",
+  prit: "Your privacy level", pris: "You can change it any time in Privacy.",
+  next: "Continue", back: "Back", skip: "Skip", start: "Start",
+});
+let LANG = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+const t = (k, v) => { let s = I18N[LANG][k] ?? I18N.es[k] ?? k; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
+const ARTISTS = ["Bad Bunny", "Rosalía", "Dua Lipa", "The Weeknd", "Queen", "Daft Punk", "Taylor Swift", "Quevedo", "Aitana", "C. Tangana", "Estopa", "Coldplay", "Imagine Dragons", "Billie Eilish", "Feid", "Karol G", "Arctic Monkeys", "Linkin Park", "Rauw Alejandro", "Amaral", "Mecano", "Fito y Fitipaldis", "Ed Sheeran", "Metallica"];
 
 // ---------- backend bridge (mock data when opened in a plain browser, for design previews) ----------
 const demo = [
   ["Nebula Drive", "Luna Park", "Midnight Orbit", 214], ["Violet Hour", "Astra", "Violet Hour", 187], ["Pink Gravity", "Moon Club", "Soft Planets", 241],
   ["Afterglow", "Satellite", "Low Orbit", 198], ["Cosmic Dust", "Lyra", "Stardust", 226], ["Eclipse", "Nova", "Eclipse", 205],
 ].map(([title, artist, album, duration], i) => ({ id: "demo" + i, title, artist, album, duration, cover: null }));
-let mockState = { settings: { offline: false, guest: false, history_days: 0, volume: 0.8 }, library: { favorites: [demo[1]], playlists: [{ id: "p1", name: "Late night", tracks: demo.slice(0, 4) }], history: demo.slice(0, 3).map((x, i) => ({ track: x, played_at: Date.now() - i * 3.6e6 })) } };
+let mockState = { settings: { offline: false, guest: false, history_days: 0, volume: 0.8, lang: "", onboarded: !/welcome/.test(location.hash), artists: ["Rosalía", "Queen"] }, library: { favorites: [demo[1]], playlists: [{ id: "p1", name: "Late night", tracks: demo.slice(0, 4) }], history: demo.slice(0, 3).map((x, i) => ({ track: x, played_at: Date.now() - i * 3.6e6 })) } };
 const api = MOCK
-  ? { invoke: async (cmd, a = {}) => ({ search: demo, get_state: mockState, connections: [{ host: "music.youtube.com", requests: 4, last: Date.now() }, { host: "googlevideo.com", requests: 2, last: Date.now() - 60000 }], lyrics: "Demo lyrics\nLine two\nLine three" }[cmd] ?? mockState) }
+  ? { invoke: async (cmd, a = {}) => (cmd === "set_settings" ? (mockState = { ...mockState, settings: a.settings }) : ({ search: demo, get_state: mockState, connections: [{ host: "music.youtube.com", requests: 4, last: Date.now() }, { host: "googlevideo.com", requests: 2, last: Date.now() - 60000 }], lyrics: "Demo lyrics\nLine two\nLine three" }[cmd] ?? mockState)) }
   : { invoke: (cmd, a) => TAURI.core.invoke(cmd, a) };
 const listen = (ev, fn) => (MOCK ? null : TAURI.event.listen(ev, (e) => fn(e.payload)));
 
@@ -70,7 +97,7 @@ function row(tr, list, i, extra = "") {
   const fav = favs().has(tr.id);
   return `<div class="row${cur && cur.id === tr.id ? " playing" : ""}" data-i="${i}" data-id="${esc(tr.id)}">
     ${coverEl(tr)}<div style="min-width:0"><div class="t1">${esc(tr.title)}</div><div class="t2">${esc(tr.artist)}${tr.album ? " · " + esc(tr.album) : ""}</div></div>
-    <div class="acts"><button class="ib fav${fav ? "" : " off"}" data-a="fav" title="Favorita"><svg viewBox="0 0 24 24" fill="${fav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.400-9-9.200C1.700 7.600 3.800 4.500 7 4.500c2 0 3.400 1 5 3 1.600-2 3-3 5-3 3.200 0 5.300 3.100 4 6.300-2 4.800-9 9.200-9 9.200z"/></svg></button>
+    <div class="acts"><button class="ib fav${fav ? "" : " off"}" data-a="fav" title="${t("fav")}"><svg viewBox="0 0 24 24" fill="${fav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.400-9-9.200C1.700 7.600 3.800 4.500 7 4.500c2 0 3.400 1 5 3 1.600-2 3-3 5-3 3.200 0 5.300 3.100 4 6.300-2 4.800-9 9.200-9 9.200z"/></svg></button>
     <button class="ib" data-a="add" title="${t("addto")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>${extra}<span class="dur">${fmt(tr.duration)}</span></div></div>`;
 }
 function list(tracks, extra) { return `<div class="list">${tracks.map((x, i) => row(x, tracks, i, extra ? extra(x) : "")).join("")}</div>`; }
@@ -79,8 +106,8 @@ function render() {
   document.querySelectorAll(".nav").forEach((n) => n.classList.toggle("on", n.dataset.view === view));
   const v = $("#view");
   if (view === "search") {
-    v.innerHTML = `<h1>${t("search")}</h1><div class="search glass pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.500-3.500"/></svg><input id="q" placeholder="${t("ph")}" value="${esc(lastQuery)}" autofocus></div><div id="res"></div>`;
-    paintResults(); $("#q").addEventListener("input", (e) => debounceSearch(e.target.value));
+    v.innerHTML = `<h1>${t("search")}</h1><div class="search glass pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.500-3.500"/></svg><input id="q" placeholder="${t("ph")}" value="${esc(lastQuery)}" autofocus></div><div id="res"></div><div id="foryou"></div>`;
+    paintResults(); paintForYou(); $("#q").addEventListener("input", (e) => debounceSearch(e.target.value));
   } else if (view === "favorites") {
     const f = S.library.favorites; v.innerHTML = `<h1>${t("favorites")}</h1>` + (f.length ? `<div class="chips"><button class="btn" data-a="playall">${t("playall")}</button></div>${list(f)}` : `<div class="empty">${esc(t("nofav")).replace("\n", "<br>")}</div>`);
   } else if (view === "history") {
@@ -93,12 +120,18 @@ function render() {
       v.innerHTML = `<h1>${t("playlists")}</h1><div class="chips"><button class="btn" data-a="newpl">${t("newpl")}</button><button class="btn ghost" data-a="import">${t("import")}</button></div>` +
         (S.library.playlists.length ? `<div class="cards">${S.library.playlists.map((p) => `<div class="card glass" data-pl="${esc(p.id)}"><div class="art">${MARK}</div><div class="t1">${esc(p.name)}</div><div class="t2">${p.tracks.length} ${t("tracks")}</div></div>`).join("")}</div>` : `<div class="empty">${t("nopl")}</div>`);
     }
+  } else if (view === "queue") {
+    v.innerHTML = `<h1>${t("queue")}</h1>` + (queue.length ? list(queue) : `<div class="empty">${t("noqueue")}</div>`);
   } else if (view === "privacy") {
     const s = S.settings, sw = (k, on) => `<div class="sw${on ? " on" : ""}" data-sw="${k}"></div>`;
     v.innerHTML = `<h1>${t("privacy")}</h1><div class="hero glass"><h2>${t("ptitle")}</h2><p class="sub">${t("pa")}</p><ul><li>${t("pl1")}</li><li>${t("pl2")}</li><li>${t("pl3")}</li><li>${t("pl4")}</li></ul></div>
       <div class="set glass"><div><b>${t("off")}</b><span>${t("offd")}</span></div>${sw("offline", s.offline)}</div>
       <div class="set glass"><div><b>${t("guest")}</b><span>${t("guestd")}</span></div>${sw("guest", s.guest)}</div>
       <div class="set glass"><div><b>${t("hdays")}</b><span>${t("hdd")}</span></div><select id="hd">${[[0, "forever"], [7, "d7"], [30, "d30"], [90, "d90"]].map(([d, k]) => `<option value="${d}"${s.history_days === d ? " selected" : ""}>${t(k)}</option>`).join("")}</select></div>
+      <h2>${t("langtastes")}</h2>
+      <div class="set glass"><div><b>${t("lang")}</b><span>${t("langd")}</span></div><select id="lang"><option value="es"${LANG === "es" ? " selected" : ""}>Español</option><option value="en"${LANG === "en" ? " selected" : ""}>English</option></select></div>
+      <div class="set glass wrap"><div style="flex:1 1 100%"><b>${t("tastes")}</b><span>${t("tastesd")}</span></div><div class="artbox"><div class="arts">${(S.settings.artists || []).map((a) => `<button class="chipsel on" data-rmart="${esc(a)}">${esc(a)} ✕</button>`).join("")}</div><div class="addrow"><input id="newart" placeholder="${t("addart")}"><button class="btn" data-a="addart">${t("add")}</button></div></div></div>
+      <div class="chips"><button class="btn ghost" data-a="repeatwel">${t("repeatwel")}</button></div>
       <h2>${t("conns")}</h2><p class="sub">${t("connsd")}</p><div id="conns"></div>
       <div class="chips" style="margin-top:1.4rem"><button class="btn ghost" data-a="clearh">${t("clearh")}</button><button class="btn danger" data-a="erase">${t("erase")}</button></div>`;
     api.invoke("connections").then((c) => { $("#conns").innerHTML = c.length ? c.map((x) => `<div class="conn"><span>${esc(x.host)}</span><span>${x.requests} ${t("req")}</span></div>`).join("") : `<div class="t2">${t("noconn")}</div>`; });
@@ -109,8 +142,24 @@ function paintResults() {
   if (S.settings.offline) r.innerHTML = `<div class="empty">${t("offline")}</div>`;
   else r.innerHTML = results.length ? list(results) : `<div class="empty">${lastQuery ? "" : t("nores")}</div>`;
 }
+let forYou = [], fyKey = "";
+async function paintForYou() {
+  let el = $("#foryou"); if (!el) return;
+  const arts = S.settings.artists || [];
+  if (!arts.length || S.settings.offline || lastQuery.trim()) { el.innerHTML = ""; return; }
+  const key = arts.join("|");
+  if (fyKey !== key) {
+    fyKey = key; forYou = [];
+    el.innerHTML = `<h2>${t("foryou")}</h2><p class="sub">${t("foryoud")}</p><div class="empty">${t("searching")}</div>`;
+    const pick = arts.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+    const rs = await Promise.all(pick.map((a) => api.invoke("search", { query: a }).catch(() => [])));
+    const seen = new Set(); forYou = rs.flatMap((r) => r.slice(0, 5)).filter((x) => !seen.has(x.id) && seen.add(x.id));
+  }
+  el = $("#foryou"); if (!el || view !== "search" || lastQuery.trim()) return;
+  el.innerHTML = forYou.length ? `<h2>${t("foryou")}</h2><p class="sub">${t("foryoud")}</p>${list(forYou)}` : "";
+}
 let timer; function debounceSearch(q) {
-  lastQuery = q; clearTimeout(timer);
+  lastQuery = q; clearTimeout(timer); paintForYou();
   if (!q.trim()) { results = []; return paintResults(); }
   timer = setTimeout(async () => {
     const r = $("#res"); if (r) r.innerHTML = `<div class="empty">${t("searching")}</div>`;
@@ -166,7 +215,13 @@ async function toggleFs() { if (MOCK) return; const w = TAURI.window.getCurrentW
 document.addEventListener("keydown", (e) => {
   if (e.key === "F11") { e.preventDefault(); toggleFs(); }
   else if (e.key === "Escape") $("#np").classList.remove("open");
-  else if (e.code === "Space" && !/INPUT|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); $("#pp").click(); }
+  else if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  else if (e.code === "Space") { e.preventDefault(); $("#pp").click(); }
+  else if (e.key === "ArrowRight") api.invoke("seek", { seconds: Math.min((cur && cur.duration) || 0, pos + 10) });
+  else if (e.key === "ArrowLeft") api.invoke("seek", { seconds: Math.max(0, pos - 10) });
+  else if (e.key === "ArrowUp" || e.key === "ArrowDown") { vol.value = Math.max(0, Math.min(100, +vol.value + (e.key === "ArrowUp" ? 5 : -5))); vol.oninput(); }
+  else if (e.key === "n") $("#next").click();
+  else if (e.key === "p") $("#prev").click();
 });
 function menu(x, y, items) {
   document.querySelectorAll(".menu").forEach((m) => m.remove());
@@ -182,9 +237,14 @@ function dialog(html, onOk, okLabel, danger) {
   inp && (inp.onkeydown = (e) => e.key === "Enter" && s.querySelector("[data-ok]").click());
 }
 const setState = (st) => { S = st; };
+const saveSettings = async (patch) => setState(await api.invoke("set_settings", { settings: { ...S.settings, ...patch } }));
+function curSrc(el) {
+  if (el && el.closest && el.closest("#foryou")) return forYou;
+  return view === "search" ? results : view === "favorites" ? S.library.favorites : view === "queue" ? queue : view === "history" ? S.library.history.map((x) => x.track) : (S.library.playlists.find((p) => p.id === openPl) || { tracks: [] }).tracks;
+}
 async function act(a, el, ev) {
   const rowEl = el.closest(".row"); const id = rowEl && rowEl.dataset.id;
-  const src = view === "search" ? results : view === "favorites" ? S.library.favorites : view === "history" ? S.library.history.map((x) => x.track) : (S.library.playlists.find((p) => p.id === openPl) || { tracks: [] }).tracks;
+  const src = curSrc(el);
   const tr = id && src.find((x) => x.id === id);
   if (a === "fav") { setState(await api.invoke("toggle_favorite", { track: tr })); render(); }
   else if (a === "add") { const pls = S.library.playlists; if (!pls.length) return toast(t("nopl")); menu(ev.clientX, ev.clientY, pls.map((p) => [p.name, async () => { setState(await api.invoke("add_to_playlist", { id: p.id, track: tr })); toast(t("added")); }])); }
@@ -194,29 +254,98 @@ async function act(a, el, ev) {
   else if (a === "delpl") { setState(await api.invoke("delete_playlist", { id: openPl })); openPl = null; render(); }
   else if (a === "newpl") dialog(`<b>${t("newpl")}</b><input placeholder="${t("name")}">`, async (v) => { if (v.trim()) { setState(await api.invoke("create_playlist", { name: v.trim() })); render(); } }, t("create"));
   else if (a === "import") dialog(`<b>${t("import")}</b><input placeholder="${t("importph")}">`, async (v) => { try { setState(await api.invoke("import_playlist", { link: v })); toast(t("imported")); render(); } catch (e) { toast(errText(e)); } }, t("import"));
+  else if (a === "addart") { const i = $("#newart"); const n = (i.value || "").trim(); if (n && !(S.settings.artists || []).includes(n)) { await saveSettings({ artists: [...(S.settings.artists || []), n] }); fyKey = ""; render(); } }
+  else if (a === "repeatwel") showWelcome();
   else if (a === "clearh") { setState(await api.invoke("clear_history")); render(); }
   else if (a === "erase") dialog(`<b>${t("erased")}</b><span class="t2">${t("erasedd")}</span>`, () => api.invoke("erase_all"), t("yes"), true);
 }
 $("#view").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-a]"); const rowEl = e.target.closest(".row"); const card = e.target.closest("[data-pl]"); const sw = e.target.closest("[data-sw]");
+  const ra = e.target.closest("[data-rmart]");
+  if (ra) { await saveSettings({ artists: (S.settings.artists || []).filter((x) => x !== ra.dataset.rmart) }); fyKey = ""; return render(); }
   if (b) { e.stopPropagation(); return act(b.dataset.a, b, e); }
   if (sw) { const s = { ...S.settings, [sw.dataset.sw]: !S.settings[sw.dataset.sw] }; setState(await api.invoke("set_settings", { settings: s })); return render(); }
   if (card) { openPl = card.dataset.pl; return render(); }
-  if (rowEl) { const i = +rowEl.dataset.i; const src = view === "search" ? results : view === "favorites" ? S.library.favorites : view === "history" ? S.library.history.map((x) => x.track) : (S.library.playlists.find((p) => p.id === openPl) || { tracks: [] }).tracks; playList(src, i); }
+  if (rowEl) { const i = +rowEl.dataset.i; const src = curSrc(e.target); playList(src, i); }
 });
-$("#view").addEventListener("change", async (e) => { if (e.target.id === "hd") { const s = { ...S.settings, history_days: +e.target.value }; setState(await api.invoke("set_settings", { settings: s })); render(); } });
+$("#view").addEventListener("change", async (e) => { if (e.target.id === "lang") { LANG = e.target.value; await saveSettings({ lang: LANG }); applyLang(); render(); } if (e.target.id === "hd") { const s = { ...S.settings, history_days: +e.target.value }; setState(await api.invoke("set_settings", { settings: s })); render(); } });
+
+// ---------- sleep timer ----------
+let sleepT = null;
+function setSleep(n) {
+  clearTimeout(sleepT); $("#sleep").classList.toggle("on", !!n);
+  if (n) { toast(t("sleepset", { n })); sleepT = setTimeout(() => { if (playing) { api.invoke("pause"); setPlaying(false); } $("#sleep").classList.remove("on"); toast(t("sleepdone")); }, n * 60000); } else toast(t("sleepoff"));
+}
+$("#sleep").onclick = (e) => { const r = e.currentTarget.getBoundingClientRect(); const items = [15, 30, 45, 60, 90].map((n) => [n + " " + t("min"), () => setSleep(n)]).concat([[t("sleepoff"), () => setSleep(0)]]); menu(r.left - 100, r.top - items.length * 46 - 16, items); };
+
+// ---------- language ----------
+function applyLang() {
+  document.documentElement.lang = LANG; $("#side-tag").textContent = t("tag"); $("#splash-line").textContent = t("splash");
+  document.querySelectorAll("[data-tr]").forEach((n) => (n.textContent = t(n.dataset.tr)));
+  const T = { shuffle: "t_shuffle", prev: "t_prev", pp: "t_pp", next: "t_next", repeat: "t_repeat", "open-np": "t_np", "close-np": "t_close", sleep: "t_sleep" };
+  for (const id in T) { const el = document.getElementById(id); if (el) el.title = t(T[id]); }
+  document.querySelectorAll("[data-proxy]").forEach((b) => (b.title = t({ prev: "t_prev", pp: "t_pp", next: "t_next" }[b.dataset.proxy])));
+}
+
+// ---------- welcome (first run) ----------
+let wstep = 0, wsel = new Set();
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.500-3.200 8-8 9-4.800-1-8-4.500-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>';
+function showWelcome(step = 0) {
+  const old = $("#welcome"); if (old) old.remove();
+  wstep = step; wsel = new Set(S.settings.artists || []);
+  const w = document.createElement("section"); w.id = "welcome"; document.body.appendChild(w);
+  w.addEventListener("click", welcomeClick);
+  w.addEventListener("change", async (e) => { if (e.target.id === "whd") { await saveSettings({ history_days: +e.target.value }); } });
+  w.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "wnew") addWelcomeArtist(); });
+  drawWelcome();
+}
+function addWelcomeArtist() { const i = $("#wnew"); const n = (i.value || "").trim(); if (n) { wsel.add(n); drawWelcome(); const j = $("#wnew"); j && j.focus(); } }
+function drawWelcome() {
+  const w = $("#welcome"); if (!w) return;
+  const s = S.settings;
+  let body = "";
+  if (wstep === 0) body = `<div class="wmark">${MARK}</div><h1>AstroTune</h1><h2>${t("wlang")}</h2><div class="langs"><button class="lang${LANG === "es" ? " on" : ""}" data-l="es">Español</button><button class="lang${LANG === "en" ? " on" : ""}" data-l="en">English</button></div><p class="sub">${t("wlangs")}</p>`;
+  else if (wstep === 1) body = `<h1>${t("sect")}</h1><p class="sub">${t("sects")}</p><ul class="wlist">${["sec1", "sec2", "sec3", "sec4", "sec5"].map((k) => `<li>${CHECK}<span>${t(k)}</span></li>`).join("")}</ul>`;
+  else if (wstep === 2) {
+    const all = [...ARTISTS, ...[...wsel].filter((x) => !ARTISTS.includes(x))];
+    body = `<h1>${t("artt")}</h1><p class="sub">${t("arts")}</p><div class="arts">${all.map((a) => `<button class="chipsel${wsel.has(a) ? " on" : ""}" data-art="${esc(a)}">${esc(a)}</button>`).join("")}</div><div class="addrow"><input id="wnew" placeholder="${t("addart")}"><button class="btn ghost" data-w="addart">${t("add")}</button></div>`;
+  } else body = `<h1>${t("prit")}</h1><p class="sub">${t("pris")}</p>
+    <div class="set glass"><div><b>${t("off")}</b><span>${t("offd")}</span></div><div class="sw${s.offline ? " on" : ""}" data-wsw="offline"></div></div>
+    <div class="set glass"><div><b>${t("guest")}</b><span>${t("guestd")}</span></div><div class="sw${s.guest ? " on" : ""}" data-wsw="guest"></div></div>
+    <div class="set glass"><div><b>${t("hdays")}</b><span>${t("hdd")}</span></div><select id="whd">${[[0, "forever"], [7, "d7"], [30, "d30"], [90, "d90"]].map(([d, k]) => `<option value="${d}"${s.history_days === d ? " selected" : ""}>${t(k)}</option>`).join("")}</select></div>`;
+  const last = wstep === 3;
+  w.innerHTML = `<div class="wcard glass">${body}<div class="wnav"><div class="dots">${[0, 1, 2, 3].map((i) => `<i class="${i === wstep ? "on" : ""}"></i>`).join("")}</div><div class="r">${wstep > 0 ? `<button class="btn ghost" data-w="back">${t("back")}</button>` : ""}${wstep === 2 ? `<button class="btn ghost" data-w="skip">${t("skip")}</button>` : ""}<button class="btn" data-w="${last ? "start" : "next"}">${last ? t("start") : t("next")}</button></div></div></div>`;
+}
+async function welcomeClick(e) {
+  const l = e.target.closest("[data-l]"), a = e.target.closest("[data-art]"), sw = e.target.closest("[data-wsw]"), b = e.target.closest("[data-w]");
+  if (l) { LANG = l.dataset.l; await saveSettings({ lang: LANG }); applyLang(); render(); return drawWelcome(); }
+  if (a) { wsel.has(a.dataset.art) ? wsel.delete(a.dataset.art) : wsel.add(a.dataset.art); return drawWelcome(); }
+  if (sw) { await saveSettings({ [sw.dataset.wsw]: !S.settings[sw.dataset.wsw] }); return drawWelcome(); }
+  if (!b) return;
+  const k = b.dataset.w;
+  if (k === "addart") return addWelcomeArtist();
+  if (k === "next") { wstep++; return drawWelcome(); }
+  if (k === "skip") { wsel = new Set(); wstep++; return drawWelcome(); }
+  if (k === "back") { wstep--; return drawWelcome(); }
+  if (k === "start") {
+    await saveSettings({ onboarded: true, lang: LANG, artists: [...wsel] }); fyKey = "";
+    const w = $("#welcome"); w.classList.add("out"); setTimeout(() => w.remove(), 600); render();
+  }
+}
 
 // ---------- start ----------
+
 (async function init() {
-  $("#side-tag").textContent = t("tag"); $("#splash-line").textContent = t("splash");
-  document.querySelectorAll("[data-i]").forEach((n) => (n.textContent = t(n.dataset.i)));
   try { setState(await api.invoke("get_state")); } catch (e) { toast(String(e)); }
+  if (S.settings.lang) LANG = S.settings.lang;
+  applyLang();
   vol.value = Math.round((S.settings.volume ?? 0.8) * 100); paint(vol); paint(seek); render();
   if (MOCK) { // design previews in a plain browser: #privacy, #favorites, #np ...
-    const h = location.hash.slice(1); if (h && h !== "np") { view = h; render(); }
+    const h = location.hash.slice(1); if (h && h !== "np" && !/welcome/.test(h)) { view = h; render(); }
     if (h === "np") { results = demo; playList(demo, 1); setTimeout(() => $("#np").classList.add("open"), 50); }
     if (h === "") { debounceSearch("neon"); }
   }
+  if (!S.settings.onboarded) showWelcome(MOCK ? +(location.hash.match(/welcome(\d)/) || [0, 0])[1] : 0);
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  setTimeout(() => $("#splash").classList.add("out"), reduce ? 200 : 2600);
+  setTimeout(() => { $("#splash").classList.add("out"); setTimeout(() => $("#splash").remove(), 1200); }, reduce ? 200 : 2600);
 })();

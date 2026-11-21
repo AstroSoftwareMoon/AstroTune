@@ -39,11 +39,17 @@ pub struct Settings {
     /// Days of history kept; 0 keeps everything.
     pub history_days: u32,
     pub volume: f32,
+    /// "es" / "en"; empty until the person picks one in the welcome screen.
+    pub lang: String,
+    /// False until the welcome screen has been completed.
+    pub onboarded: bool,
+    /// Favourite artists chosen in the welcome screen. Stored only on this PC.
+    pub artists: Vec<String>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { offline: false, guest: false, history_days: 0, volume: 0.8 }
+        Self { offline: false, guest: false, history_days: 0, volume: 0.8, lang: String::new(), onboarded: false, artists: Vec::new() }
     }
 }
 

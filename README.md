@@ -12,6 +12,7 @@ AstroTune es un fork de [OpenTune](https://github.com/justshivv/Opentune) de jus
 
 ## Cambios respecto a OpenTune
 
+- Versión de escritorio (Windows, macOS, Linux) con la misma marca.
 - Nueva marca: nombre AstroTune, icono de la app, animación de apertura y banner con la luna.
 - Identificador propio (`com.astrotune`): se instala junto a OpenTune sin pisarlo.
 - Las estadísticas de uso están desactivadas: no se envía nada a los servidores originales.
@@ -34,7 +35,7 @@ AstroTune es privado y anónimo por diseño.
 
 ## Compilar
 
-Cada push compila el APK en GitHub Actions (pestaña **Actions** → artefacto `AstroTune-debug-apk`).
+Cada push compila el APK de Android (y el workflow "Desktop AstroTune" genera los instaladores de Windows, macOS y Linux) en GitHub Actions (pestaña **Actions** → artefacto `AstroTune-debug-apk`).
 
 En local: `./gradlew :app:assembleDebug` (JDK 21 y Android SDK 37).
 

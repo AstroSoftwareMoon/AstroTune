@@ -114,6 +114,7 @@ object RemoteConfig {
         source.readUtf8()
     }
     suspend fun refresh(force: Boolean = false): Boolean = mutex.withLock {
+        if (com.opentune.data.Privacy.OFFLINE_SERVICES) return@withLock false
         val p = prefs ?: return@withLock false
         if (mutable.value.expiresAt <= System.currentTimeMillis()) mutable.value = AppConfig()
         val now = android.os.SystemClock.elapsedRealtime()

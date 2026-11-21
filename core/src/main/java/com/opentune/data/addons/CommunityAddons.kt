@@ -19,6 +19,7 @@ object CommunityAddons {
     private var lastCheck = 0L
     private const val EVERY_MS = 10 * 60_000L
     suspend fun refresh(force: Boolean = false): Boolean = mutex.withLock {
+        if (com.opentune.data.Privacy.OFFLINE_SERVICES) return@withLock false
         val now = android.os.SystemClock.elapsedRealtime()
         if (!force && now - lastCheck < EVERY_MS && lastCheck != 0L) return@withLock true
         withContext(Dispatchers.IO) {

@@ -66,6 +66,7 @@ object UpdateLock {
 
     /** Checks the releases again, at most once an hour unless [force]d. */
     suspend fun refresh(context: Context, force: Boolean = false) = withContext(Dispatchers.IO) {
+        if (Privacy.OFFLINE_SERVICES) return@withContext
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
         if (!force && now - prefs.getLong(K_CHECKED, 0) < EVERY_MS) return@withContext

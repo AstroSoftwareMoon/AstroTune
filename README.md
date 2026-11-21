@@ -15,6 +15,14 @@ AstroTune es un fork de [OpenTune](https://github.com/justshivv/Opentune) de jus
 - Las estadísticas de uso están desactivadas: no se envía nada a los servidores originales.
 - El comprobador de actualizaciones apunta a este repositorio.
 
+## Privacidad
+
+- Sin estadísticas de uso, sin analíticas y sin informes de fallos remotos.
+- Sin configuración remota, sin bloqueo remoto de versión, sin comprobación automática de actualizaciones ni catálogo de addons de terceros: un interceptor central (`Privacy.kt`) corta cualquier conexión a los servidores del autor original.
+- Copias de seguridad de Android desactivadas y sin permiso para instalar paquetes.
+- Solo se conecta a los servicios que necesita tu reproducción (música, letras, metadatos) y a tu propio servidor si usas uno.
+- El repositorio es privado.
+
 ## Compilar
 
 Cada push compila el APK en GitHub Actions (pestaña **Actions** → artefacto `AstroTune-debug-apk`).

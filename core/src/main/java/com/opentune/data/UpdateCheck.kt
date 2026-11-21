@@ -80,6 +80,7 @@ object UpdateCheck {
     }
 
     suspend fun check(): Result = withContext(Dispatchers.IO) {
+        if (Privacy.OFFLINE_SERVICES) return@withContext Result.UpToDate
         val abis = Build.SUPPORTED_ABIS.toList()
         val viaApi = runCatching {
             Http.client.newCall(
@@ -172,6 +173,7 @@ object UpdateCheck {
      * opens. Null when there's nothing newer, or the user said "not now" to it.
      */
     suspend fun checkIfDue(context: Context): Release? {
+        if (Privacy.OFFLINE_SERVICES) return null
         val prefs = context.getSharedPreferences("updates", Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
         val every = if (found(prefs) != null) RECHECK_FOUND_MS else AUTO_EVERY_MS
@@ -229,6 +231,7 @@ object UpdateCheck {
 
     /** Background checks, twice a day while automatic checks are on. */
     fun schedule(context: Context) {
+        if (Privacy.OFFLINE_SERVICES) return
         val work = runCatching { WorkManager.getInstance(context) }.getOrNull() ?: return
         if (!com.opentune.data.settings.AppSettings.ui.value.checkForUpdates) {
             work.cancelUniqueWork(WORK)

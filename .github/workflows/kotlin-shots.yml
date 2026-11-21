@@ -1,0 +1,61 @@
+name: Kotlin screenshots (reference)
+
+# Draws the Android app's own screens (Robolectric screenshot tests) and pushes the PNGs to the
+# `kotlin-shots` branch, so the Rust version can be compared with them pixel by pixel.
+on:
+  workflow_dispatch:
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;36.0.0
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Sample covers
+        run: |
+          mkdir -p /tmp/art
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          import colorsys, random
+          names = ["00","00hd","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","danny","exploder"]
+          for i, n in enumerate(names):
+              random.seed(i)
+              h = (i * 0.137) % 1
+              a = [int(c*255) for c in colorsys.hsv_to_rgb(h, .75, .85)]
+              b = [int(c*255) for c in colorsys.hsv_to_rgb((h+.12)%1, .9, .3)]
+              im = Image.new("RGB", (600, 600))
+              d = ImageDraw.Draw(im)
+              for y in range(600):
+                  t = y/600
+                  d.line([(0,y),(600,y)], fill=tuple(int(a[k]*(1-t)+b[k]*t) for k in range(3)))
+              d.ellipse([350,60,540,250], fill=tuple(min(255,c+60) for c in a))
+              im.save(f"/tmp/art/{n}.jpg", quality=90)
+          PY
+      - name: Run screenshot tests
+        env:
+          OPENTUNE_SHOT_ART: /tmp/art
+        run: |
+          ./gradlew --no-daemon --continue :app:testDebugUnitTest \
+            --tests '*ScreenshotTest' --tests '*ShotsTest' --tests 'com.opentune.ui.home.*' \
+            --tests 'com.opentune.ui.components.*' --tests 'com.opentune.ui.settings.*' \
+            --tests 'com.opentune.ui.library.*' --tests 'com.opentune.ui.welcome.*' || true
+          find app/build/screenshots -name "*.png" | wc -l
+      - name: Push to kotlin-shots branch
+        run: |
+          mkdir /tmp/out && cp -r app/build/screenshots/. /tmp/out/
+          cd /tmp/out
+          git init -q -b kotlin-shots
+          git config user.name "AstroSoftwareMoon"
+          git config user.email "noreply@users.noreply.github.com"
+          git add -A && git commit -qm "Kotlin app screenshots ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" kotlin-shots

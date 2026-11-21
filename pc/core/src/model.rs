@@ -45,11 +45,19 @@ pub struct Settings {
     pub onboarded: bool,
     /// Favourite artists chosen in the welcome screen. Stored only on this PC.
     pub artists: Vec<String>,
+    /// Accent colour, as in the Android app ("#ff0aa0" = Astro pink).
+    pub accent: String,
+    /// True black surfaces, for OLED screens.
+    pub pure_black: bool,
+    /// Tint the player and the app from the playing cover.
+    pub artwork_color: bool,
+    /// Liquid glass on the dock and sheets.
+    pub glass: bool,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { offline: false, guest: false, history_days: 0, volume: 0.8, lang: String::new(), onboarded: false, artists: Vec::new() }
+        Self { offline: false, guest: false, history_days: 0, volume: 0.8, lang: String::new(), onboarded: false, artists: Vec::new(), accent: "#ff0aa0".into(), pure_black: true, artwork_color: true, glass: true }
     }
 }
 
@@ -72,4 +80,42 @@ pub fn now_ms() -> i64 {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis() as i64)
         .unwrap_or(0)
+}
+
+/// An album, playlist or artist tile, as shown on shelves.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct Card {
+    pub kind: String,
+    pub id: String,
+    pub title: String,
+    pub subtitle: String,
+    pub cover: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Shelf {
+    pub title: String,
+    pub cards: Vec<Card>,
+    pub tracks: Vec<Track>,
+}
+
+/// An artist, album or remote playlist page.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Page {
+    pub kind: String,
+    pub id: String,
+    pub title: String,
+    pub subtitle: String,
+    pub cover: Option<String>,
+    pub description: Option<String>,
+    pub tracks: Vec<Track>,
+    pub shelves: Vec<Shelf>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Mood {
+    pub id: String,
+    pub name: String,
+    pub color: String,
+    pub is_mood: bool,
 }

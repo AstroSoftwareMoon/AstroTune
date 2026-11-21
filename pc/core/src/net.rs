@@ -8,12 +8,15 @@ use std::{
 
 use rustypipe::{
     client::RustyPipe,
-    model::{AudioFormat, Thumbnail, TrackItem},
+    model::{AlbumItem, AlbumType, ArtistItem, AudioFormat, MusicPlaylistItem, Thumbnail, TrackItem},
     param::StreamFilter,
 };
 use rustypipe_downloader::Downloader;
 
-use crate::{model::Track, privacy::ConnLog};
+use crate::{
+    model::{Card, Mood, Page, Shelf, Track},
+    privacy::ConnLog,
+};
 
 /// The one place AstroTune talks to the internet: YouTube Music, for search, playlists,
 /// lyrics and the audio itself. It sends no account, no identifier of its own and no
@@ -51,6 +54,39 @@ fn to_track(t: &TrackItem) -> Track {
         album: t.album.as_ref().map(|a| a.name.clone()),
         duration: t.duration.unwrap_or(0),
         cover: best_cover(&t.cover),
+    }
+}
+
+fn album_card(a: &AlbumItem) -> Card {
+    let kind = match a.album_type {
+        AlbumType::Single => "Single",
+        AlbumType::Ep => "EP",
+        _ => "Album",
+    };
+    let by = a.artists.iter().map(|x| x.name.as_str()).collect::<Vec<_>>().join(", ");
+    let sub = match (a.year, by.is_empty()) {
+        (Some(y), false) => format!("{kind} · {by} · {y}"),
+        (Some(y), true) => format!("{kind} · {y}"),
+        (None, false) => format!("{kind} · {by}"),
+        _ => kind.to_string(),
+    };
+    Card { kind: "album".into(), id: a.id.clone(), title: a.name.clone(), subtitle: sub, cover: best_cover(&a.cover) }
+}
+
+fn playlist_card(p: &MusicPlaylistItem) -> Card {
+    let sub = p.channel.as_ref().map(|c| c.name.clone()).unwrap_or_default();
+    Card { kind: "playlist".into(), id: p.id.clone(), title: p.name.clone(), subtitle: sub, cover: best_cover(&p.thumbnail) }
+}
+
+fn artist_card(a: &ArtistItem) -> Card {
+    Card { kind: "artist".into(), id: a.id.clone(), title: a.name.clone(), subtitle: String::new(), cover: best_cover(&a.avatar) }
+}
+
+fn shelf(title: &str, cards: Vec<Card>, tracks: Vec<Track>) -> Option<Shelf> {
+    if cards.is_empty() && tracks.is_empty() {
+        None
+    } else {
+        Some(Shelf { title: title.into(), cards, tracks })
     }
 }
 
@@ -96,6 +132,145 @@ impl Net {
         let mut p = self.rp.query().music_playlist(&id).await.map_err(err)?;
         let _ = p.tracks.extend_limit(&self.rp.query(), 500).await;
         Ok((p.name.clone(), p.tracks.items.iter().map(to_track).collect()))
+    }
+
+    pub async fn search_artists(&self, query: &str) -> Result<Vec<Card>, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let r = self.rp.query().music_search_artists(query).await.map_err(err)?;
+        Ok(r.items.items.iter().map(artist_card).collect())
+    }
+
+    pub async fn search_albums(&self, query: &str) -> Result<Vec<Card>, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let r = self.rp.query().music_search_albums(query).await.map_err(err)?;
+        Ok(r.items.items.iter().map(album_card).collect())
+    }
+
+    pub async fn artist(&self, id: &str) -> Result<Page, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let a = self.rp.query().music_artist(id, false).await.map_err(err)?;
+        let (albums, singles): (Vec<_>, Vec<_>) = a.albums.iter().partition(|x| x.album_type != AlbumType::Single);
+        let shelves = [
+            shelf("albums", albums.iter().map(|x| album_card(x)).collect(), vec![]),
+            shelf("singles", singles.iter().map(|x| album_card(x)).collect(), vec![]),
+            shelf("playlists", a.playlists.iter().map(playlist_card).collect(), vec![]),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        Ok(Page {
+            kind: "artist".into(),
+            id: a.id.clone(),
+            title: a.name.clone(),
+            subtitle: a.subscriber_count.map(|s| s.to_string()).unwrap_or_default(),
+            cover: best_cover(&a.header_image),
+            description: a.description.clone(),
+            tracks: a.tracks.iter().map(to_track).collect(),
+            shelves,
+        })
+    }
+
+    pub async fn album(&self, id: &str) -> Result<Page, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let a = self.rp.query().music_album(id).await.map_err(err)?;
+        let cover = best_cover(&a.cover);
+        let tracks = a
+            .tracks
+            .iter()
+            .map(|t| {
+                let mut x = to_track(t);
+                if x.cover.is_none() {
+                    x.cover = cover.clone();
+                }
+                if x.album.is_none() {
+                    x.album = Some(a.name.clone());
+                }
+                x
+            })
+            .collect();
+        let by = a.artists.iter().map(|x| x.name.as_str()).collect::<Vec<_>>().join(", ");
+        Ok(Page {
+            kind: "album".into(),
+            id: a.id.clone(),
+            title: a.name.clone(),
+            subtitle: match a.year { Some(y) => format!("{by} · {y}"), None => by },
+            cover,
+            description: None,
+            tracks,
+            shelves: vec![],
+        })
+    }
+
+    pub async fn remote_playlist(&self, id: &str) -> Result<Page, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let mut p = self.rp.query().music_playlist(id).await.map_err(err)?;
+        let _ = p.tracks.extend_limit(&self.rp.query(), 300).await;
+        Ok(Page {
+            kind: "playlist".into(),
+            id: p.id.clone(),
+            title: p.name.clone(),
+            subtitle: p.channel.as_ref().map(|c| c.name.clone()).unwrap_or_default(),
+            cover: best_cover(&p.thumbnail),
+            description: None,
+            tracks: p.tracks.items.iter().map(to_track).collect(),
+            shelves: vec![],
+        })
+    }
+
+    /// Songs like this one ("start radio").
+    pub async fn radio(&self, video_id: &str) -> Result<Vec<Track>, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let r = self.rp.query().music_radio_track(video_id).await.map_err(err)?;
+        Ok(r.items.iter().map(to_track).collect())
+    }
+
+    pub async fn new_albums(&self) -> Result<Vec<Card>, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        Ok(self.rp.query().music_new_albums().await.map_err(err)?.iter().map(album_card).collect())
+    }
+
+    pub async fn charts(&self) -> Result<Page, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let c = self.rp.query().music_charts(None).await.map_err(err)?;
+        let shelves = [
+            shelf("top", vec![], c.top_tracks.iter().map(to_track).collect()),
+            shelf("trending", vec![], c.trending_tracks.iter().map(to_track).collect()),
+            shelf("artists", c.artists.iter().map(artist_card).collect(), vec![]),
+            shelf("playlists", c.playlists.iter().map(playlist_card).collect(), vec![]),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        Ok(Page { kind: "charts".into(), shelves, ..Default::default() })
+    }
+
+    pub async fn moods(&self) -> Result<Vec<Mood>, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let g = self.rp.query().music_genres().await.map_err(err)?;
+        Ok(g.iter()
+            .map(|x| Mood { id: x.id.clone(), name: x.name.clone(), color: format!("#{:06x}", x.color & 0xffffff), is_mood: x.is_mood })
+            .collect())
+    }
+
+    pub async fn mood(&self, id: &str) -> Result<Page, String> {
+        self.online()?;
+        self.log.note("music.youtube.com");
+        let g = self.rp.query().music_genre(id).await.map_err(err)?;
+        let shelves = g
+            .sections
+            .iter()
+            .filter_map(|s| shelf(&s.name, s.playlists.iter().map(playlist_card).collect(), vec![]))
+            .collect();
+        Ok(Page { kind: "mood".into(), id: g.id.clone(), title: g.name.clone(), shelves, ..Default::default() })
     }
 
     pub async fn lyrics(&self, video_id: &str) -> Result<Option<String>, String> {

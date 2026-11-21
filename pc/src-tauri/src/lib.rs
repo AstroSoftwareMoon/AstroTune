@@ -11,7 +11,7 @@ use std::{
 };
 
 use astrotune_core::{
-    model::{AppState as LibState, Settings, Track},
+    model::{AppState as LibState, Card, Mood, Page, Settings, Track},
     net::Net,
     privacy::{Conn, ConnLog},
     store::Store,
@@ -41,6 +41,27 @@ fn trim_cache(dir: &PathBuf) {
         let _ = fs::remove_file(p);
     }
 }
+
+#[tauri::command]
+async fn search_artists(app: State<'_, App>, query: String) -> Result<Vec<Card>, String> { app.net.search_artists(&query).await }
+#[tauri::command]
+async fn search_albums(app: State<'_, App>, query: String) -> Result<Vec<Card>, String> { app.net.search_albums(&query).await }
+#[tauri::command]
+async fn artist(app: State<'_, App>, id: String) -> Result<Page, String> { app.net.artist(&id).await }
+#[tauri::command]
+async fn album(app: State<'_, App>, id: String) -> Result<Page, String> { app.net.album(&id).await }
+#[tauri::command]
+async fn remote_playlist(app: State<'_, App>, id: String) -> Result<Page, String> { app.net.remote_playlist(&id).await }
+#[tauri::command]
+async fn radio(app: State<'_, App>, id: String) -> Result<Vec<Track>, String> { app.net.radio(&id).await }
+#[tauri::command]
+async fn new_albums(app: State<'_, App>) -> Result<Vec<Card>, String> { app.net.new_albums().await }
+#[tauri::command]
+async fn charts(app: State<'_, App>) -> Result<Page, String> { app.net.charts().await }
+#[tauri::command]
+async fn moods(app: State<'_, App>) -> Result<Vec<Mood>, String> { app.net.moods().await }
+#[tauri::command]
+async fn mood(app: State<'_, App>, id: String) -> Result<Page, String> { app.net.mood(&id).await }
 
 #[tauri::command]
 async fn search(app: State<'_, App>, query: String) -> Result<Vec<Track>, String> {
@@ -192,6 +213,16 @@ pub fn run() {
             search,
             play,
             fetch_track,
+            search_artists,
+            search_albums,
+            artist,
+            album,
+            remote_playlist,
+            radio,
+            new_albums,
+            charts,
+            moods,
+            mood,
             pause,
             resume,
             seek,

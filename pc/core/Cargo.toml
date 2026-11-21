@@ -1,6 +1,6 @@
 [package]
 name = "astrotune-core"
-version = "1.6.0"
+version = "1.7.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
 description = "AstroTune PC core: music client, library store and privacy log. No telemetry."

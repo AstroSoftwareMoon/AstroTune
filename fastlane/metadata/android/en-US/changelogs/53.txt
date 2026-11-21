@@ -1,0 +1,1 @@
+AstroTune 1.7.0: the Rust versions for PC and Android now look and work like this app (Home, Explore, Library, artwork-coloured player, lyrics, radio, appearance settings) and share its launcher icon. Private and anonymous: no account, no tracking, nothing leaves your device.

@@ -4,6 +4,14 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, e.g. v1.2.0"
+        required: true
+        default: "v1.2.0"
+
+env:
+  VERSION: ${{ github.event.inputs.version || github.ref_name }}
 
 jobs:
   release:
@@ -28,13 +36,13 @@ jobs:
           mkdir out
           for f in app/build/outputs/apk/release/*.apk; do
             b=$(basename "$f" | sed -E 's/^app-//; s/-release//; s/\.apk$//')
-            cp "$f" "out/AstroTune-${GITHUB_REF_NAME}-${b}.apk"
+            cp "$f" "out/AstroTune-${VERSION}-${b}.apk"
           done
           ls -la out
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" out/*.apk \
-            --title "AstroTune $GITHUB_REF_NAME" \
+          gh release create "$VERSION" out/*.apk --target "${GITHUB_SHA}" \
+            --title "AstroTune $VERSION" \
             --notes "Primera versión de AstroTune, fork de OpenTune (GPL-3.0). Instala el APK universal o el de tu arquitectura (arm64-v8a en casi todos los móviles actuales). Firmado con clave de depuración."

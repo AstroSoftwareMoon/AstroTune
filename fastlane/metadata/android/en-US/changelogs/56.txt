@@ -1,0 +1,1 @@
+AstroTune 1.9.1: songs no longer skip by themselves mid-way. SponsorBlock only applies when the video length really matches the song (and is now off by default), and a stream that drops is picked up again from the same second instead of skipping.

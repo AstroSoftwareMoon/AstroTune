@@ -234,6 +234,31 @@ impl Hub {
             return serve_file(req, file, range);
         }
         let id = id.to_string();
+        // Known length (the usual case): answer the range ourselves and fetch it in pieces.
+        let hub0 = self.clone();
+        let first = tauri::async_runtime::block_on(async { hub0.stream(&id, false).await });
+        if let Ok(st) = &first {
+            if let Some(total) = st.size.filter(|n| *n > 0) {
+                let (start, end) = range.as_deref().and_then(|r| parse_range(r, total)).unwrap_or((0, total - 1));
+                let partial = range.is_some();
+                let (tx, rx) = mpsc::sync_channel::<Vec<u8>>(16);
+                let hub = self.clone();
+                let id2 = id.clone();
+                tauri::async_runtime::spawn(async move {
+                    let net = hub.net.clone();
+                    pump(&net, |fresh| { let h = hub.clone(); let id = id2.clone(); async move { h.stream(&id, fresh).await } }, start, end, tx).await;
+                });
+                let len = (end - start + 1) as usize;
+                let mut resp = Response::new(StatusCode(if partial { 206 } else { 200 }), vec![], ChanReader { rx, buf: vec![], pos: 0 }, Some(len), None);
+                resp.add_header(hdr("Content-Type", &st.mime));
+                resp.add_header(hdr("Accept-Ranges", "bytes"));
+                if partial {
+                    resp.add_header(hdr("Content-Range", &format!("bytes {start}-{end}/{total}")));
+                }
+                let _ = req.respond(resp);
+                return;
+            }
+        }
         let (tx_head, rx_head) = mpsc::channel::<Result<(u16, Vec<(String, String)>, Option<usize>), String>>();
         let (tx, rx) = mpsc::sync_channel::<Vec<u8>>(32);
         let hub = self.clone();
@@ -328,5 +353,68 @@ fn serve_file(req: Request, path: PathBuf, range: Option<String>) {
         let _ = req.respond(resp);
     } else {
         let _ = req.respond(Response::new(StatusCode(200), vec![ct, ar], f, Some(len as usize), None));
+    }
+}
+
+/// Streams `[start, end]` of a song to `tx` in 2 MB ranges, each asked for with the identity
+/// that minted the URL. A range that fails (stale address, dropped connection) is asked for
+/// again with a fresh address, so a song never stops half way.
+pub async fn pump<F, Fut>(net: &astrotune_core::net::Net, mut get_stream: F, start: u64, end: u64, tx: std::sync::mpsc::SyncSender<Vec<u8>>)
+where
+    F: FnMut(bool) -> Fut,
+    Fut: std::future::Future<Output = Result<astrotune_core::yt::Stream, String>>,
+{
+    use futures_util::StreamExt;
+    const CHUNK: u64 = 2 * 1024 * 1024;
+    let mut at = start;
+    let mut fresh = false;
+    let mut failures = 0;
+    while at <= end {
+        let s = match get_stream(fresh).await {
+            Ok(s) => s,
+            Err(_) => return,
+        };
+        let to = (at + CHUNK - 1).min(end);
+        net.note_media();
+        let mut r = net.http().get(&s.url).header("Range", format!("bytes={at}-{to}"));
+        if !s.ua.is_empty() {
+            r = r.header("User-Agent", &s.ua);
+        }
+        let ok = match r.send().await {
+            Ok(resp) if resp.status().is_success() => {
+                let mut body = resp.bytes_stream();
+                let mut got = 0u64;
+                let mut broke = false;
+                while let Some(chunk) = body.next().await {
+                    match chunk {
+                        Ok(b) => {
+                            got += b.len() as u64;
+                            if tx.send(b.to_vec()).is_err() {
+                                return; // the listener went away
+                            }
+                        }
+                        Err(_) => {
+                            broke = true;
+                            break;
+                        }
+                    }
+                }
+                at += got;
+                !broke && got > 0
+            }
+            Ok(_) => false,
+            Err(_) => false,
+        };
+        if ok {
+            failures = 0;
+            fresh = false;
+        } else {
+            failures += 1;
+            if failures > 4 {
+                return;
+            }
+            fresh = true;
+            tokio::time::sleep(std::time::Duration::from_millis(400 * failures)).await;
+        }
     }
 }

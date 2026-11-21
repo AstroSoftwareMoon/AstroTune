@@ -113,8 +113,13 @@ object SponsorBlock {
      * segment's own video length within two seconds of the player's, or
      * not given. Guards against a different cut sharing the id's segments.
      */
+    /**
+     * Only when both lengths are known and match: segments are timed on one particular
+     * upload (often the music video), and applied to a different cut of the song they
+     * jump to the middle or past the end, which reads as the song skipping by itself.
+     */
     fun fits(segment: Segment, playingDurationMs: Long): Boolean =
-        segment.videoDurationMs <= 0 || playingDurationMs <= 0 || kotlin.math.abs(segment.videoDurationMs - playingDurationMs) <= 2_000
+        segment.videoDurationMs > 0 && playingDurationMs > 0 && kotlin.math.abs(segment.videoDurationMs - playingDurationMs) <= 2_000
 
     private fun JsonObject.str(key: String) = (this[key] as? JsonPrimitive)?.contentOrNull
 }

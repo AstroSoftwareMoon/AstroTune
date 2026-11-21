@@ -568,6 +568,15 @@ listen("player-tick", (p) => native && onTick(p)); listen("player-ended", () => 
 au.ontimeupdate = () => !native && !castDev && onTick({ pos: au.currentTime, paused: au.paused });
 au.onpause = au.onplay = () => !native && !castDev && onTick({ pos: au.currentTime, paused: au.paused });
 au.onended = () => !native && !castDev && next(true);
+// A stream that drops mid-song is picked up again from the same second (a few times) instead of skipping.
+let retryFor = null, retryN = 0;
+au.addEventListener("error", () => {
+  if (native || castDev || NATIVE || !cur || pos < 1 || !au.src) return;
+  if (retryFor !== cur.id) { retryFor = cur.id; retryN = 0; }
+  if (retryN >= 3) return;
+  retryN++; const id = cur.id, at = pos, src = au.src;
+  setTimeout(() => { if (!cur || cur.id !== id) return; au.src = src; const go = () => { au.currentTime = at; au.play().catch(() => {}); }; au.addEventListener("loadedmetadata", go, { once: true }); au.load(); }, 600 * retryN);
+});
 if ("mediaSession" in navigator) { const ms = navigator.mediaSession; ms.setActionHandler("play", toggle); ms.setActionHandler("pause", toggle); ms.setActionHandler("nexttrack", () => next()); ms.setActionHandler("previoustrack", prev); }
 
 // ---------------------------------------------------------------- full player

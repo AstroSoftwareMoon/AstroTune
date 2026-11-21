@@ -2018,6 +2018,11 @@ object StreamResolver {
     /** Long enough for a freshly minted visitor id to be worth anything, short enough not to be felt. */
     private const val DOWNLOAD_RETRY_MS = 500L
 
+    /** Forgets the address handed out for [videoId], so the next open asks for a fresh one. */
+    fun forget(videoId: String) {
+        recent.remove(videoId)
+    }
+
     private fun remember(videoId: String, url: String) {
         if (recent.size >= MAX_REMEMBERED) {
             val cutoff = SystemClock.elapsedRealtime() - URL_TTL_MS

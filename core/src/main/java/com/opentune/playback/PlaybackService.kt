@@ -129,6 +129,7 @@ class PlaybackService : MediaLibraryService() {
 
     /** The item a failed load was last retried for. See [recover]. */
     private var retriedMediaId: String? = null
+    private var retriesForItem = 0
 
     private var soundEffects: SoundEffects? = null
     private val dsp = DspAudioProcessor()
@@ -2778,10 +2779,26 @@ class PlaybackService : MediaLibraryService() {
         val permanent = generateSequence<Throwable>(error) { it.cause }
             .any { it is StreamResolver.PermanentlyUnplayableException }
 
-        if (!permanent && retriedMediaId != mediaId) {
-            Log.w(TAG, "Retrying $mediaId after ${error.errorCodeName}")
-            retriedMediaId = mediaId
-            player.prepare()
+        // A stream that drops in the middle of a song (expired address, a flaky connection)
+        // is picked up again from the same second with a fresh address, a few times, before
+        // giving up on the song: skipping mid-song reads as the app jumping tracks by itself.
+        if (!permanent && (retriedMediaId != mediaId || retriesForItem < MAX_RETRIES)) {
+            if (retriedMediaId != mediaId) {
+                retriedMediaId = mediaId
+                retriesForItem = 0
+            }
+            retriesForItem++
+            Log.w(TAG, "Retrying $mediaId after ${error.errorCodeName} ($retriesForItem/$MAX_RETRIES)")
+            StreamResolver.forget(mediaId)
+            val index = player.currentMediaItemIndex
+            val position = player.currentPosition
+            scope.launch {
+                delay(700L * retriesForItem)
+                if (player.currentMediaItem?.mediaId == mediaId && player.playerError != null) {
+                    player.seekTo(index, position)
+                    player.prepare()
+                }
+            }
             return
         }
         failedInRow++
@@ -2901,6 +2918,8 @@ class PlaybackService : MediaLibraryService() {
         const val MAX_FAILED_IN_ROW = 3
         /** Playing this long means the track's stream really works. */
         const val PLAYED_OK_MS = 10_000L
+        /** Attempts at picking a dropped stream up again before the song is given up. */
+        const val MAX_RETRIES = 3
         const val UPGRADE_MIN_REMAINING_MS = 20_000L
         /** A FLAC search that failed only on server errors: its erring add-ons are asked again after each of these waits. */
         val LOSSLESS_RETRY_MS = longArrayOf(3_000L, 6_000L, 12_000L)

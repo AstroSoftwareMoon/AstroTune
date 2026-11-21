@@ -9,6 +9,8 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
@@ -44,6 +46,24 @@ class PlaybackService : MediaLibraryService() {
             this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        // A stream that drops mid-song is picked up again from the same second, a few times,
+        // instead of moving on: the app's server fetches a fresh address when the old one expired.
+        player.addListener(object : Player.Listener {
+            private var retries = 0
+            private val main = android.os.Handler(android.os.Looper.getMainLooper())
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { retries = 0 }
+            override fun onPlayerError(error: PlaybackException) {
+                if (retries >= 3) return
+                retries++
+                val index = player.currentMediaItemIndex
+                val position = player.currentPosition
+                main.postDelayed({
+                    player.seekTo(index, position)
+                    player.prepare()
+                    player.play()
+                }, 700L * retries)
+            }
+        })
         session = MediaLibrarySession.Builder(this, player, Library(this)).setSessionActivity(open).build()
     }
 

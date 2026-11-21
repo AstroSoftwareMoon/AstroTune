@@ -405,8 +405,8 @@ data class PlaybackSettings(
     val resumeOnConnect: Boolean = false,
     /** Pause when the media volume is turned all the way down, and resume when it comes back up. */
     val pauseAtZeroVolume: Boolean = false,
-    /** Skip the non-music parts of music videos, from SponsorBlock. */
-    val sponsorBlock: Boolean = true,
+    /** Skip the non-music parts of music videos, from SponsorBlock (a third-party service, so off unless chosen). */
+    val sponsorBlock: Boolean = false,
     /** SponsorBlock categories to skip, by API name. */
     val sponsorBlockCategories: Set<String> = DEFAULT_SPONSORBLOCK_CATEGORIES,
 )
@@ -926,7 +926,14 @@ object AppSettings {
         connectivity = context.getSystemService(ConnectivityManager::class.java)
         val stored = p.getString(K_STATE, null)?.let { runCatching { json.decodeFromString<SettingsState>(it) }.getOrNull() }
         publish(stored ?: migrateLegacy(p))
+        // 1.9.1: SponsorBlock was on by default and could skip songs mid-way; turn it off once.
+        if (!p.getBoolean(K_SPONSORBLOCK_OFF, false)) {
+            p.edit().putBoolean(K_SPONSORBLOCK_OFF, true).apply()
+            if (_state.value.playback.sponsorBlock) updatePlayback { it.copy(sponsorBlock = false) }
+        }
     }
+
+    private const val K_SPONSORBLOCK_OFF = "astro_sponsorblock_off_v1"
 
     private fun publish(stored: SettingsState) {
         // Curves saved by the seven-band equalizer are redrawn on fifteen bands.

@@ -56,6 +56,12 @@ jobs:
             --tests 'com.opentune.ui.home.HomePicksTest' --tests 'com.opentune.ui.library.LibraryTilesScreenshotTest' \
             --tests 'com.opentune.ui.player.LandscapeScreenshotTest' || true
           find app/build/screenshots -name "*.png" | wc -l
+      - name: PC app screenshots
+        timeout-minutes: 30
+        continue-on-error: true
+        run: |
+          ./gradlew --no-daemon :desktop:test --tests 'com.opentune.desktop.DesktopShots' -Dopentune.shots=$PWD/app/build/screenshots/desktop || true
+          ls app/build/screenshots/desktop || true
       - name: Push to kotlin-shots branch
         if: always()
         run: |

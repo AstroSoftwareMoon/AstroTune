@@ -15,6 +15,10 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 | 🍎 macOS Apple Silicon (M1 o superior) | `*-macos-apple-silicon.dmg` |
 | 🍎 macOS Intel | `*-macos-intel.dmg` |
 
+## 🛠️ 2.0.1
+
+- **Letras palabra a palabra**: ya no salen las palabras pegadas ("Quememueroportide..."); se recuperan los espacios.
+
 ## ✨ Novedades de la 2.0
 
 - **AstroTune para PC, hecha desde la app de Android.** Ya no hay versión en Rust: la de Windows, macOS y Linux compila el mismo código que el móvil (YouTube Music, letras de todas las fuentes, ajustes, mixes diarios, estadísticas) y se ve igual: dock y barra lateral con cristal, reproductor con el color de la carátula, letras sincronizadas, cola, radio, complementos de audio sin pérdida (FLAC), Discord y Last.fm.

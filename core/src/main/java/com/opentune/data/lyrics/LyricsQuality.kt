@@ -99,7 +99,7 @@ internal object LyricsQuality {
      * no end given one.
      */
     fun tidy(lines: List<LyricLine>, durationMs: Long): List<LyricLine> {
-        val sorted = lines.sortedBy { it.startMs }
+        val sorted = spaced(lines).sortedBy { it.startMs }
         val out = ArrayList<LyricLine>(sorted.size)
         for ((i, raw) in sorted.withIndex()) {
             val text = raw.text.replace(SPACES, " ").trim()
@@ -119,6 +119,58 @@ internal object LyricsQuality {
             out += timed(raw.copy(text = text), next, durationMs)
         }
         return out
+    }
+
+    /**
+     * Word-synced lines whose words came without the spaces between them
+     * ("Quememueroportidesde..."): the spaces are put back from the line's
+     * own text where it has them, and otherwise, when nothing in the song has
+     * a space and it's written in a script that uses them, between words.
+     */
+    internal fun spaced(lines: List<LyricLine>): List<LyricLine> {
+        fun bare(l: LyricLine) = l.wordSynced && l.words.size >= 2 && l.words.none { w -> w.text.any(Char::isWhitespace) }
+        if (lines.none(::bare)) return lines
+        val songHasSpaces = lines.any { l -> l.words.any { w -> w.text.trim().any(Char::isWhitespace) || w.text.lastOrNull()?.isWhitespace() == true } || (!bare(l) && l.text.any(Char::isWhitespace)) }
+        val spacedScript = usesSpaces(lines.joinToString("") { it.text })
+        return lines.map { line ->
+            if (!bare(line)) return@map line
+            realign(line.words, line.text)?.let { return@map line.copy(words = it) }
+            if (songHasSpaces || !spacedScript) return@map line
+            val words = line.words.mapIndexed { i, w -> if (i < line.words.lastIndex) w.copy(text = w.text + " ") else w }
+            line.copy(words = words, text = words.joinToString("") { it.text }.trim())
+        }
+    }
+
+    /** [words] with the spaces [text] has between them, or null when the two don't spell the same thing. */
+    private fun realign(words: List<LyricWord>, text: String): List<LyricWord>? {
+        if (text.none(Char::isWhitespace)) return null
+        var at = 0
+        while (at < text.length && text[at].isWhitespace()) at++
+        val out = ArrayList<LyricWord>(words.size)
+        for (w in words) {
+            if (!text.regionMatches(at, w.text, 0, w.text.length, ignoreCase = true)) return null
+            at += w.text.length
+            var gap = false
+            while (at < text.length && text[at].isWhitespace()) { at++; gap = true }
+            out += if (gap) w.copy(text = w.text + " ") else w
+        }
+        return out.takeIf { at >= text.length }
+    }
+
+    /** Whether most letters in [text] are in a script written with spaces between words (not Chinese, Japanese, Thai...). */
+    private fun usesSpaces(text: String): Boolean {
+        var spaced = 0
+        var unspaced = 0
+        for (c in text) {
+            if (!c.isLetter()) continue
+            when (Character.UnicodeScript.of(c.code)) {
+                Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA,
+                Character.UnicodeScript.THAI, Character.UnicodeScript.LAO, Character.UnicodeScript.KHMER,
+                Character.UnicodeScript.MYANMAR, Character.UnicodeScript.TIBETAN -> unspaced++
+                else -> spaced++
+            }
+        }
+        return spaced > unspaced
     }
 
     private fun timed(line: LyricLine, next: Long?, durationMs: Long): LyricLine {

@@ -115,11 +115,17 @@ object LyricsPlus {
             val (backing, lead) = (item["syllabus"] as? JsonArray).orEmpty().filterIsInstance<JsonObject>()
                 .partition { (it["isBackground"] as? JsonPrimitive)?.booleanOrNull == true }
             val words = lead.mapNotNull { s ->
-                val text = (s["text"] as? JsonPrimitive)?.contentOrNull ?: return@mapNotNull null
+                var text = (s["text"] as? JsonPrimitive)?.contentOrNull ?: return@mapNotNull null
                 val b = s.long("time") ?: return@mapNotNull null
+                // Some servers send each word bare and mark the syllables that belong to the next one.
+                val partOfWord = (s["isPartOfWord"] as? JsonPrimitive)?.booleanOrNull
+                if (partOfWord == false && text.isNotEmpty() && !text.last().isWhitespace()) text += " "
                 LyricWord(text, b, b + (s.long("duration") ?: 0))
             }.filter { it.text.isNotBlank() }
-            val text = (if (words.isNotEmpty()) words.joinToString("") { it.text } else (item["text"] as? JsonPrimitive)?.contentOrNull.orEmpty())
+            val given = (item["text"] as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
+            val joined = words.joinToString("") { it.text }
+            // The line's own text keeps the spaces when the syllables come without them.
+            val text = (if (words.isEmpty()) given.orEmpty() else if (joined.none(Char::isWhitespace) && given != null && given.any(Char::isWhitespace)) given else joined)
                 .replace(Regex("\\s+"), " ").trim()
             if (text.isEmpty()) return@mapIndexedNotNull null
             // Backing vocals go under the line rather than into its sweep.

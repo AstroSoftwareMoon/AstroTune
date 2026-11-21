@@ -1,0 +1,1 @@
+AstroTune 2.0.1: word-by-word lyrics keep the spaces between words.

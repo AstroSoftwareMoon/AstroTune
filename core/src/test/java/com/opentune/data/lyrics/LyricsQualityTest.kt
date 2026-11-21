@@ -282,3 +282,30 @@ class LyricsQualityTest {
         assertEquals("You'll", tidied.lines[0].words[0].text)
     }
 }
+
+class LyricsSpacingTest {
+    private fun line(text: String, vararg words: String): LyricLine {
+        var t = 0L
+        return LyricLine(0, 3_000, text, words.map { w -> LyricWord(w, t, t + 300).also { t += 300 } }, wordSynced = true)
+    }
+
+    @org.junit.Test fun spacesComeBackFromTheLineText() {
+        val l = LyricsQuality.spaced(listOf(line("Que me muero por ti", "Que", "me", "mue", "ro", "por", "ti"))).single()
+        org.junit.Assert.assertEquals("Que me muero por ti", l.words.joinToString("") { it.text }.trim())
+    }
+
+    @org.junit.Test fun bareWordsGetSpacesWhenNothingHasThem() {
+        val l = LyricsQuality.spaced(listOf(line("Quememuero", "Que", "me", "muero"))).single()
+        org.junit.Assert.assertEquals("Que me muero", l.text)
+    }
+
+    @org.junit.Test fun chineseIsLeftAlone() {
+        val l = LyricsQuality.spaced(listOf(line("我爱你", "我", "爱", "你"))).single()
+        org.junit.Assert.assertEquals("我爱你", l.words.joinToString("") { it.text })
+    }
+
+    @org.junit.Test fun syllablesOfASpacedSongStayTogether() {
+        val lines = listOf(line("Que me", "Que ", "me"), line("conocido", "co", "no", "ci", "do"))
+        org.junit.Assert.assertEquals("conocido", LyricsQuality.spaced(lines)[1].words.joinToString("") { it.text })
+    }
+}

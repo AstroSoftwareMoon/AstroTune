@@ -33,6 +33,16 @@ AstroTune es privado y anónimo por diseño.
 - Las peticiones de red se identifican solo como "AstroTune": sin versión, sin URL, sin ID de instalación. Letras y metadatos envían únicamente título y artista a su proveedor, de forma anónima.
 - El repositorio es privado.
 
+## Herramientas de privacidad (Ajustes)
+
+- **Modo sin conexión**: bloquea todo internet; solo suena la música local o descargada.
+- **Modo invitado**: reproduce sin guardar historial.
+- **Bloqueo de la app** con el PIN, patrón o huella del móvil.
+- **Ocultar en recientes**: sin capturas y con vista previa en blanco.
+- **Borrado automático del historial** (7, 30 o 90 días).
+- **Dónde se conecta AstroTune**: lista de servidores contactados, solo en tu móvil.
+- **Borrar todo** con un toque.
+
 ## Compilar
 
 Cada push compila el APK de Android (y el workflow "Desktop AstroTune" genera los instaladores de Windows, macOS y Linux) en GitHub Actions (pestaña **Actions** → artefacto `AstroTune-debug-apk`).

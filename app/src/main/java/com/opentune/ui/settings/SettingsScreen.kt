@@ -1850,6 +1850,62 @@ private fun settingsSections(
                 Entry("Support AstroTune", "donate upi pay money tip support developer") {
                     NavRow("Support AstroTune", { supportDialog = true }, summary = "A small thank-you helps keep AstroTune going", icon = Icons.Rounded.Favorite)
                 },
+                Entry("Offline mode", "offline no internet block network private") {
+                    val v by com.opentune.AstroPrivacy.offline.collectAsState()
+                    ToggleRow("Offline mode", v, { com.opentune.AstroPrivacy.setOffline(it) }, summary = "Blocks all internet access. Only downloaded and local music plays. Nothing leaves this phone.", icon = Icons.Rounded.Info)
+                },
+                Entry("Guest mode", "guest incognito history private no history") {
+                    val v by com.opentune.AstroPrivacy.guest.collectAsState()
+                    ToggleRow("Guest mode", v, { com.opentune.AstroPrivacy.setGuest(it) }, summary = "Plays without saving anything to your listening history.", icon = Icons.Rounded.Info)
+                },
+                Entry("Lock AstroTune", "lock pin fingerprint biometric password private") {
+                    val v by com.opentune.AstroPrivacy.lock.collectAsState()
+                    ToggleRow("Lock AstroTune", v, { com.opentune.AstroPrivacy.setLock(it) }, summary = "Asks for your phone's PIN, pattern or fingerprint when you open the app. Needs a screen lock set on the phone.", icon = Icons.Rounded.Info)
+                },
+                Entry("Hide in recent apps", "screenshot recents secure hide capture private") {
+                    val v by com.opentune.AstroPrivacy.secure.collectAsState()
+                    ToggleRow("Hide in recent apps", v, { com.opentune.AstroPrivacy.setSecure(it) }, summary = "Blocks screenshots and shows a blank preview in the recent apps list.", icon = Icons.Rounded.Info)
+                },
+                Entry("Delete history automatically", "history delete auto days clear private") {
+                    val d by com.opentune.AstroPrivacy.historyDays.collectAsState()
+                    val label = if (d == 0) "Keep everything" else "Keep the last $d days"
+                    NavRow("Delete history automatically", {
+                        val next = when (d) { 0 -> 7; 7 -> 30; 30 -> 90; else -> 0 }
+                        com.opentune.AstroPrivacy.setHistoryDays(next)
+                    }, summary = "$label. Tap to change.", icon = Icons.Rounded.Info)
+                },
+                Entry("Where AstroTune connects", "transparency servers hosts network connections private") {
+                    var open by remember { mutableStateOf(false) }
+                    NavRow("Where AstroTune connects", { open = true }, summary = "See every server reached since the app started. This list stays on the phone.", icon = Icons.Rounded.Info)
+                    if (open) {
+                        val fmt = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                        val rows = com.opentune.data.Privacy.recent()
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { open = false },
+                            confirmButton = { androidx.compose.material3.TextButton(onClick = { open = false }) { androidx.compose.material3.Text("Close") } },
+                            title = { androidx.compose.material3.Text("Connections") },
+                            text = { androidx.compose.material3.Text(if (rows.isEmpty()) "No connections yet." else rows.joinToString("\n") { "${it.first} · ${it.second}x · ${fmt.format(java.util.Date(it.third))}" }) },
+                        )
+                    }
+                },
+                Entry("Erase everything", "wipe delete all data reset erase private") {
+                    var open by remember { mutableStateOf(false) }
+                    NavRow("Erase everything", { open = true }, summary = "Deletes your library, history, settings and downloads from this phone, and closes the app.", icon = Icons.Rounded.Info)
+                    if (open) {
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { open = false },
+                            confirmButton = {
+                                androidx.compose.material3.TextButton(onClick = {
+                                    open = false
+                                    context.getSystemService(android.app.ActivityManager::class.java)?.clearApplicationUserData()
+                                }) { androidx.compose.material3.Text("Erase") }
+                            },
+                            dismissButton = { androidx.compose.material3.TextButton(onClick = { open = false }) { androidx.compose.material3.Text("Cancel") } },
+                            title = { androidx.compose.material3.Text("Erase everything?") },
+                            text = { androidx.compose.material3.Text("This can't be undone. Back up your library first if you want to keep it.") },
+                        )
+                    }
+                },
                 Entry("Your data stays here", "privacy anonymous private data stays on device") {
                     NavRow("Your data stays here", {}, summary = "Private by design: your library, history and settings stay on this phone. Nothing is uploaded, nothing is tracked, you stay anonymous.", icon = Icons.Rounded.Info)
                 },

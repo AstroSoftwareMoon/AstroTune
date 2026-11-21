@@ -36,8 +36,29 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(com.opentune.ui.theme.AppLanguages.wrap(newBase))
     }
 
+    private var lastLeft = 0L
+    private var authenticating = false
+    private val unlockLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { r ->
+        authenticating = false
+        if (r.resultCode == RESULT_OK) findViewById<android.view.View>(android.R.id.content).visibility = android.view.View.VISIBLE else finishAffinity()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!AstroPrivacy.lock.value || authenticating) return
+        val away = android.os.SystemClock.elapsedRealtime() - lastLeft
+        if (lastLeft != 0L && away < 15_000) return
+        val intent = getSystemService(android.app.KeyguardManager::class.java)
+            ?.takeIf { it.isDeviceSecure }
+            ?.createConfirmDeviceCredentialIntent("AstroTune", "Confirm it's you to open AstroTune") ?: return
+        authenticating = true
+        findViewById<android.view.View>(android.R.id.content).visibility = android.view.View.INVISIBLE
+        unlockLauncher.launch(intent)
+    }
+
     override fun onStop() {
         super.onStop()
+        lastLeft = android.os.SystemClock.elapsedRealtime()
         com.opentune.ui.components.GlassPerformance.unwatch(this)
         // Off the screen, the app can be closed at any moment: a like or a playlist change made
         // just before was still waiting for its save, and was lost.
@@ -51,6 +72,12 @@ class MainActivity : ComponentActivity() {
         }.getOrNull() ?: android.content.res.Resources.getSystem().configuration.locales[0].country.takeIf { it.length == 2 }
         java.util.Locale.setDefault(resources.configuration.locales[0])
         enableEdgeToEdge()
+        lifecycleScope.launch {
+            AstroPrivacy.secure.collect { on ->
+                if (on) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        }
         com.opentune.ui.components.GlassPerformance.init(this)
         if (savedInstanceState == null) receive(intent)
         // An older Android or a phone short of memory: Lite mode, once, before the first frame.

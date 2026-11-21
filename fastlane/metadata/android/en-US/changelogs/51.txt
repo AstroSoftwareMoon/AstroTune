@@ -1,0 +1,1 @@
+New privacy tools: offline mode, guest mode, app lock, hide in recent apps, automatic history deletion, a list of every server the app reaches, and one-tap erase. Dark theme by default.

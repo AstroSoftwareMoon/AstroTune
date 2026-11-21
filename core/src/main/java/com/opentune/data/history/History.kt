@@ -101,6 +101,7 @@ object History {
     /** Records a listen and returns its key for [updateListened]. */
     fun record(song: Song, listenedMs: Long): Long {
         val now = System.currentTimeMillis()
+        if (com.opentune.data.Privacy.guest) return now
         val r = PlayRecord(song.videoId, song.title, song.artist, song.thumbnailUrl, song.durationText, song.albumName, now, listenedMs, song.isExplicit, song.artistId)
         _records.value = (listOf(r) + _records.value).take(MAX_RECORDS)
         return now
@@ -155,6 +156,12 @@ object History {
 
     fun clear() {
         _records.value = emptyList()
+    }
+
+    /** Drops listens older than [days] days. */
+    fun pruneOlderThan(days: Int) {
+        val cutoff = System.currentTimeMillis() - days * 86_400_000L
+        _records.value = _records.value.filter { it.playedAt >= cutoff }
     }
 
     /** Each track once, most recent listen first. */

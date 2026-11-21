@@ -137,7 +137,7 @@ enum class TextWeight(val label: String, val minimum: Int) {
 
 @Serializable
 data class ThemeSettings(
-    val mode: ThemeMode = ThemeMode.SYSTEM,
+    val mode: ThemeMode = ThemeMode.DARK,
     /** Material You wallpaper colors, on Android 12 and later. */
     val dynamicColor: Boolean = false,
     /** ARGB seed for the generated scheme when [dynamicColor] is off. */
@@ -1000,7 +1000,7 @@ object AppSettings {
         if (!p.contains("theme_mode")) return SettingsState()
         return SettingsState(
             theme = ThemeSettings(
-                mode = enumOf(ThemeMode.entries.toTypedArray(), p.getString("theme_mode", null), ThemeMode.SYSTEM),
+                mode = enumOf(ThemeMode.entries.toTypedArray(), p.getString("theme_mode", null), ThemeMode.DARK),
                 dynamicColor = p.getBoolean("dynamic_color", false),
                 seedColor = p.getInt("seed_color", SEED_COLORS.first()),
                 paletteStyle = enumOf(PaletteStyleOption.entries.toTypedArray(), p.getString("palette_style", null), PaletteStyleOption.TonalSpot),

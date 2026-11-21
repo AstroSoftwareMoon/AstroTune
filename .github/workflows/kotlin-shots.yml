@@ -1,7 +1,7 @@
 name: Kotlin screenshots (reference)
 
 # Draws the Android app's own screens (Robolectric screenshot tests) and pushes the PNGs to the
-# `kotlin-shots` branch, so the Rust version can be compared with them pixel by pixel.
+# `kotlin-shots` branch, so the PC version can be compared with them.
 on:
   workflow_dispatch:
 

@@ -59,8 +59,8 @@ Cada push compila el APK de Android y comprueba la app de PC en GitHub Actions. 
 
 <sub>Interfaz de PC con datos de ejemplo.</sub>
 
-### AstroTune en Rust (PC y Android beta)
-La versión de PC y la beta de Android en Rust están en `pc/`: Tauri v2 + Rust, con interfaz de cristal líquido, pantalla de inicio animada y carátulas que se adaptan a cualquier resolución. Sin cuenta, sin telemetría, sin ubicación; la interfaz no tiene acceso a internet (CSP estricta) y solo el núcleo Rust consulta YouTube Music. Biblioteca, historial y ajustes se guardan únicamente en tu PC.
+### AstroTune para PC (Windows, macOS y Linux)
+La versión de PC está en `desktop/`: Kotlin + Compose, compilando el mismo código que la app de Android (cliente de YouTube Music, parser, letras, ajustes y la misma forma de conseguir el audio). Misma apariencia, mismo cristal y mismas opciones. Sin cuenta, sin telemetría, sin ubicación; biblioteca, historial y ajustes se guardan solo en tu PC.
 
 ### Android Auto, Chromecast y altavoces
 - **Android Auto**: AstroTune aparece como app de música al conectar el móvil al coche.

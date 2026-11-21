@@ -42,7 +42,4 @@ website-reports/
 .impeccable/
 
 # Rust / Tauri (PC)
-/pc/target
-/pc/src-tauri/gen
-/pc/src-tauri/target
 node_modules

@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Main window: events and fullscreen only. No file system, shell, HTTP or opener access.","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-set-fullscreen","core:window:allow-is-fullscreen"]}}

@@ -55,6 +55,7 @@ const IC = {
   wave: P('<path d="M2 12h2l3-7 4 14 3-9 2 4h6"/>'),
   note: P('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
   key: P('<circle cx="7.500" cy="15.500" r="4.500"/><path d="m10.700 12.300 8.800-8.800M16 7l3 3M14 9l2 2"/>'),
+  person: P('<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.200-3.900 4.200-6 7.500-6s6.300 2.100 7.500 6z"/>', 1),
   search: P('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/>'),
 };
 const placeholder = (kind) => `<div class="art ph-art">${kind === "artist" ? IC.artist : kind === "album" ? IC.album : IC.note}</div>`;
@@ -119,7 +120,7 @@ const I18N = {
     wpriv: "Your music, only yours", wprivd: "AstroTune is built around your privacy.", wstart: "Start listening", skip: "Skip", continue: "Continue", back: "Back", tryagain: "Try again",
   },
 };
-const EN_APP = {"liked": "Liked songs", "playnext": "Play next", "addpl": "Add to playlist", "lyrics": "Lyrics", "charts": "Charts", "madeforyou": "Made for you today", "sleep": "Sleep timer", "newrel": "New releases", "recents": "Recents", "history": "History", "queue": "Queue", "playlists": "Playlists", "albums": "Albums", "artists": "Artists", "songs": "Songs", "radio": "Start radio", "addqueue": "Add to queue", "play": "Play", "shuffle": "Shuffle", "foryou": "For you", "wpick": "Pick an artist to start", "wsearch": "Search artists", "continue": "Continue", "skip": "Skip", "wstart": "Start listening", "ph": "Songs, albums, artists", "appearance": "Appearance", "settings": "Settings", "home": "Home", "explore": "Explore", "library": "Library", "search": "Search"};
+const EN_APP = {"gm": "Good morning", "ga": "Good afternoon", "ge": "Good evening", "gn": "Late night", "acct": "Account and settings", "liked": "Liked songs", "playnext": "Play next", "addpl": "Add to playlist", "lyrics": "Lyrics", "charts": "Charts", "madeforyou": "Made for you today", "sleep": "Sleep timer", "newrel": "New releases", "recents": "Recents", "history": "History", "queue": "Queue", "playlists": "Playlists", "albums": "Albums", "artists": "Artists", "songs": "Songs", "radio": "Start radio", "addqueue": "Add to queue", "play": "Play", "shuffle": "Shuffle", "foryou": "For you", "wpick": "Pick an artist to start", "wsearch": "Search artists", "continue": "Continue", "skip": "Skip", "wstart": "Start listening", "ph": "Songs, albums, artists", "appearance": "Appearance", "settings": "Settings", "home": "Home", "explore": "Explore", "library": "Library", "search": "Search"};
 let LANG = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
 if (MOCK && /lang=es/.test(location.search)) LANG = "es";
 for (const k in EN_APP) I18N.en[k] = EN_APP[k];
@@ -248,7 +249,8 @@ const loading = () => `<div class="empty">${t("loading")}</div>`;
 const failed = (e) => `<div class="empty">${IC.cloudoff}${esc(S.settings.offline ? t("offline") : t("err") + "\n" + errText(e))}</div>`;
 const shelfTitle = (k) => ({ albums: t("albums"), singles: t("singles"), playlists: t("playlists"), top: t("top"), trending: t("trending"), artists: t("artists") }[k] || k);
 const pageHead = (title, right = "") => `${backBtn(true)}<div class="ph"><h1>${esc(title)}</h1>${right}</div>`;
-const acct = () => `<button class="acct" data-a="settings">${IC.gear}</button>`;
+const acct = () => `<button class="acct glass" data-a="settings" title="${t("acct")}">${IC.person}</button>`;
+const greeting = () => { const h = new Date().getHours(); return t(h >= 5 && h <= 11 ? "gm" : h <= 16 && h >= 12 ? "ga" : h >= 17 && h <= 21 ? "ge" : "gn"); };
 
 // Async parts of a page fill in when ready, if the page is still showing.
 let renderId = 0;
@@ -264,7 +266,7 @@ const artistImg = (name) => cached("aimg:" + name, () => api.invoke("search_arti
 const PAGES = {
   home() {
     const hist = S.library.history.map((h) => h.track); const arts = S.settings.artists || [];
-    let h = `<div class="ph"><h1>${t("home")}</h1>${acct()}</div>`;
+    let h = `<div class="ph home"><h1>${esc(greeting())}</h1>${acct()}</div>`;
     if (!hist.length && !arts.length && !S.library.favorites.length) return h + `<div class="empty">${IC.note}${t("homeempty")}</div>`;
     // quick picks: songs like the last one you played, or from your artists
     const seed = hist[0] ? cached("radio:" + hist[0].id, () => api.invoke("radio", { id: hist[0].id })) : arts[0] ? cached("search:" + arts[0], () => api.invoke("search", { query: arts[0] })) : Promise.resolve([]);

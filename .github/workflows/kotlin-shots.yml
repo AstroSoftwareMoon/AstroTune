@@ -43,17 +43,23 @@ jobs:
               im.save(f"/tmp/art/{n}.jpg", quality=90)
           PY
       - name: Run screenshot tests
+        timeout-minutes: 55
+        continue-on-error: true
         env:
           OPENTUNE_SHOT_ART: /tmp/art
         run: |
           ./gradlew --no-daemon --continue :app:testDebugUnitTest \
-            --tests '*ScreenshotTest' --tests '*ShotsTest' --tests 'com.opentune.ui.home.*' \
-            --tests 'com.opentune.ui.components.*' --tests 'com.opentune.ui.settings.*' \
-            --tests 'com.opentune.ui.library.*' --tests 'com.opentune.ui.welcome.*' || true
+            --tests 'com.opentune.ui.ReadmeScreenshotTest' --tests 'com.opentune.ui.DockScreenshotTest' \
+            --tests 'com.opentune.ui.ExploreScreenshotTest' --tests 'com.opentune.ui.SettingsScreenshotTest' \
+            --tests 'com.opentune.ui.ChoiceSheetScreenshotTest' --tests 'com.opentune.ui.components.OpeningRevealScreenshotTest' \
+            --tests 'com.opentune.ui.components.ContextMenuScreenshotTest' --tests 'com.opentune.ui.home.MixesScreenshotTest' \
+            --tests 'com.opentune.ui.home.HomePicksTest' --tests 'com.opentune.ui.library.LibraryTilesScreenshotTest' \
+            --tests 'com.opentune.ui.player.LandscapeScreenshotTest' || true
           find app/build/screenshots -name "*.png" | wc -l
       - name: Push to kotlin-shots branch
+        if: always()
         run: |
-          mkdir /tmp/out && cp -r app/build/screenshots/. /tmp/out/
+          mkdir -p /tmp/out app/build/screenshots && cp -r app/build/screenshots/. /tmp/out/ && touch /tmp/out/.keep
           cd /tmp/out
           git init -q -b kotlin-shots
           git config user.name "AstroSoftwareMoon"

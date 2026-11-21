@@ -71,6 +71,7 @@ svg { width: 24px; height: 24px; display: block; }
 .t2 { color: var(--mu); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 20px 10px; }
 .ph h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -.01em; }
+.ph.home { padding-top: 16px; } .ph.home h1 { font-size: 36px; font-weight: 400; line-height: 1.12; }
 .sh { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 22px 20px 10px; }
 .sh h2 { margin: 0; font-size: 22px; font-weight: 700; } .sh .sub { color: var(--mu); font-size: 13px; margin-top: 2px; }
 .sh button { color: var(--mu); font-size: 14px; font-weight: 500; }
@@ -86,7 +87,7 @@ svg { width: 24px; height: 24px; display: block; }
 .pp { display: grid; }
 .circ { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
 .circ svg { width: 20px; height: 20px; }
-.acct { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--ac), var(--ac2)); display: grid; place-items: center; color: #fff; }
+.acct { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--fg); flex: none; }
 .acct svg { width: 22px; height: 22px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--fg); color: #000; font-weight: 600; }
 .btn svg { width: 20px; height: 20px; }

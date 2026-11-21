@@ -19,7 +19,6 @@ object Privacy {
         "justshivv.github.io",
         "astrosoftwaremoon.github.io",
         "api.github.com",
-        "raw.githubusercontent.com",
         "workers.dev",
         "deplexo.com",
     )

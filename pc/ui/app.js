@@ -64,6 +64,10 @@ const IC = {
   lyrb: P('<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 1-2z"/><path d="M8 9h8M8 13h5"/>'),
   share: P('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>'),
   chev: P('<path d="m9 6 6 6-6 6"/>'),
+  cast: P('<path d="M2 16a5 5 0 0 1 5 5M2 12a9 9 0 0 1 9 9M2 20.01V20"/><path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/>'),
+  speaker: P('<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14" r="3.5"/><path d="M12 6.5v.01"/>'),
+  tv: P('<rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8"/>'),
+  qr: P('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/>'),
   person: P('<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.200-3.900 4.200-6 7.500-6s6.300 2.100 7.500 6z"/>', 1),
   search: P('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/>'),
 };
@@ -129,11 +133,11 @@ const I18N = {
     wpriv: "Your music, only yours", wprivd: "AstroTune is built around your privacy.", wstart: "Start listening", skip: "Skip", continue: "Continue", back: "Back", tryagain: "Try again",
   },
 };
-const EN_APP = {"moods": "Moods", "newrel1": "New release", "chart1": "Chart", "playingfromx": "Playing from {0}", "dmix": "Daily Mix {0}", "dmixd": "Daily mixes from what you play, new each day", "lexp": "Your listening experience", "minl": "Minutes listened", "you": "You", "plays": "{0} plays", "since": "Member since", "newplh": "On this device", "importh": "From a YouTube Music link", "onthis": "On this device", "thisphone": "This phone", "thispc": "This computer", "searchset": "Search settings", "seclisten": "Listening", "seclook": "Look and feel", "secpriv": "Privacy", "secabout": "About", "view": "View artist", "openalb": "Open album", "sharel": "Share", "copied": "Link copied", "stopsin": "Stops in {0}", "ringtxt": "Music stops when the ring runs out", "plus5": "+5 min", "turnoff": "Turn off", "endsong": "End of song", "minshort": "min", "theme": "Theme", "dark": "Dark", "gm": "Good morning", "ga": "Good afternoon", "ge": "Good evening", "gn": "Late night", "acct": "Account and settings", "liked": "Liked songs", "playnext": "Play next", "addpl": "Add to playlist", "lyrics": "Lyrics", "charts": "Charts", "madeforyou": "Made for you today", "sleep": "Sleep timer", "newrel": "New releases", "recents": "Recents", "history": "History", "queue": "Queue", "playlists": "Playlists", "albums": "Albums", "artists": "Artists", "songs": "Songs", "radio": "Start radio", "addqueue": "Add to queue", "play": "Play", "shuffle": "Shuffle", "foryou": "For you", "wpick": "Pick an artist to start", "wsearch": "Search artists", "continue": "Continue", "skip": "Skip", "wstart": "Start listening", "ph": "Songs, albums, artists", "appearance": "Appearance", "settings": "Settings", "home": "Home", "explore": "Explore", "library": "Library", "search": "Search"};
+const EN_APP = {"devices": "Play on", "searching2": "Looking for speakers and TVs on your Wi-Fi…", "nodevices": "No Chromecast, Google Home or DLNA device found on this Wi-Fi.", "castvia": "Google Cast", "dlnavia": "DLNA", "castnote": "Music goes straight from this device to the speaker, inside your Wi-Fi. Alexa: pair it as a Bluetooth speaker.", "rescan": "Search again", "castto": "Playing on {0}", "castend": "Back on this device", "remote": "Connect your phone", "remoted": "Scan the code with your phone's camera to control AstroTune from it. Only works on this Wi-Fi.", "remoteoff": "Turn off", "remoteon": "Phone remote on", "remotenote": "The link has a private code made when AstroTune started. Nothing is installed on the phone and nothing leaves your network.", "moods": "Moods", "newrel1": "New release", "chart1": "Chart", "playingfromx": "Playing from {0}", "dmix": "Daily Mix {0}", "dmixd": "Daily mixes from what you play, new each day", "lexp": "Your listening experience", "minl": "Minutes listened", "you": "You", "plays": "{0} plays", "since": "Member since", "newplh": "On this device", "importh": "From a YouTube Music link", "onthis": "On this device", "thisphone": "This phone", "thispc": "This computer", "searchset": "Search settings", "seclisten": "Listening", "seclook": "Look and feel", "secpriv": "Privacy", "secabout": "About", "view": "View artist", "openalb": "Open album", "sharel": "Share", "copied": "Link copied", "stopsin": "Stops in {0}", "ringtxt": "Music stops when the ring runs out", "plus5": "+5 min", "turnoff": "Turn off", "endsong": "End of song", "minshort": "min", "theme": "Theme", "dark": "Dark", "gm": "Good morning", "ga": "Good afternoon", "ge": "Good evening", "gn": "Late night", "acct": "Account and settings", "liked": "Liked songs", "playnext": "Play next", "addpl": "Add to playlist", "lyrics": "Lyrics", "charts": "Charts", "madeforyou": "Made for you today", "sleep": "Sleep timer", "newrel": "New releases", "recents": "Recents", "history": "History", "queue": "Queue", "playlists": "Playlists", "albums": "Albums", "artists": "Artists", "songs": "Songs", "radio": "Start radio", "addqueue": "Add to queue", "play": "Play", "shuffle": "Shuffle", "foryou": "For you", "wpick": "Pick an artist to start", "wsearch": "Search artists", "continue": "Continue", "skip": "Skip", "wstart": "Start listening", "ph": "Songs, albums, artists", "appearance": "Appearance", "settings": "Settings", "home": "Home", "explore": "Explore", "library": "Library", "search": "Search"};
 let LANG = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
 if (MOCK && /lang=es/.test(location.search)) LANG = "es";
 for (const k in EN_APP) I18N.en[k] = EN_APP[k];
-Object.assign(I18N.es, {"newrel1": "Novedad", "chart1": "Lista", "lexp": "Tu experiencia de escucha", "minl": "Minutos escuchados", "you": "Tú", "plays": "{0} reproducciones", "since": "Miembro desde", "newplh": "En este dispositivo", "importh": "Desde un enlace de YouTube Music", "onthis": "En este dispositivo", "thispc": "Este ordenador", "seclisten": "Escucha", "seclook": "Aspecto", "secpriv": "Privacidad", "secabout": "Acerca de", "dmix": "Daily Mix {0}", "dmixd": "Mixes diarios con lo que escuchas, nuevos cada día", "copied": "Enlace copiado", "stopsin": "Se para en {0}", "plus5": "+5 min", "minshort": "min", "theme": "Tema", "dark": "Oscuro", "gm": "Buenos días", "ga": "Buenas tardes", "ge": "Buenas noches", "gn": "Noche", "acct": "Cuenta y ajustes", "view": "Ver artista", "openalb": "Abrir álbum", "sharel": "Compartir", "playingfromx": "Reproduciendo desde {0}", "thisphone": "Este teléfono", "searchset": "Buscar en ajustes", "endsong": "Final de la canción", "turnoff": "Desactivar", "ringtxt": "La música se detiene cuando se acaba el anillo", "moods": "Estados de ánimo"});
+Object.assign(I18N.es, {"devices": "Reproducir en", "searching2": "Buscando altavoces y teles en tu wifi…", "nodevices": "No hay ningún Chromecast, Google Home ni dispositivo DLNA en esta wifi.", "castvia": "Google Cast", "dlnavia": "DLNA", "castnote": "La música va directa de este equipo al altavoz, dentro de tu wifi. Alexa: conéctala como altavoz Bluetooth.", "rescan": "Buscar otra vez", "castto": "Sonando en {0}", "castend": "De vuelta en este equipo", "remote": "Conectar el móvil", "remoted": "Escanea el código con la cámara del móvil para controlar AstroTune desde él. Solo funciona en esta wifi.", "remoteoff": "Desactivar", "remoteon": "Mando del móvil activado", "remotenote": "El enlace lleva un código privado creado al abrir AstroTune. No se instala nada en el móvil y nada sale de tu red.", "newrel1": "Novedad", "chart1": "Lista", "lexp": "Tu experiencia de escucha", "minl": "Minutos escuchados", "you": "Tú", "plays": "{0} reproducciones", "since": "Miembro desde", "newplh": "En este dispositivo", "importh": "Desde un enlace de YouTube Music", "onthis": "En este dispositivo", "thispc": "Este ordenador", "seclisten": "Escucha", "seclook": "Aspecto", "secpriv": "Privacidad", "secabout": "Acerca de", "dmix": "Daily Mix {0}", "dmixd": "Mixes diarios con lo que escuchas, nuevos cada día", "copied": "Enlace copiado", "stopsin": "Se para en {0}", "plus5": "+5 min", "minshort": "min", "theme": "Tema", "dark": "Oscuro", "gm": "Buenos días", "ga": "Buenas tardes", "ge": "Buenas noches", "gn": "Noche", "acct": "Cuenta y ajustes", "view": "Ver artista", "openalb": "Abrir álbum", "sharel": "Compartir", "playingfromx": "Reproduciendo desde {0}", "thisphone": "Este teléfono", "searchset": "Buscar en ajustes", "endsong": "Final de la canción", "turnoff": "Desactivar", "ringtxt": "La música se detiene cuando se acaba el anillo", "moods": "Estados de ánimo"});
 // Spanish: the app's own translation of the English label when it has one, so both apps read the same.
 const t = (k, v) => { const en = I18N.en[k]; let s = LANG === "es" ? (window.ES_APP && window.ES_APP[en]) || I18N.es[k] || en || k : en ?? I18N.es[k] ?? k; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
 
@@ -179,7 +183,7 @@ const cached = (key, fn) => { if (!memo.has(key)) memo.set(key, fn().catch((e) =
 
 // ---------------------------------------------------------------- state
 let S = { settings: {}, library: { favorites: [], playlists: [], history: [] } };
-const setState = (st) => { if (st) S = st; };
+const setState = (st) => { if (st) { S = st; pushLibrary(); } };
 const saveSettings = async (patch) => { setState(await api.invoke("set_settings", { settings: { ...S.settings, ...patch } })); applyLook(); };
 const favs = () => new Set(S.library.favorites.map((x) => x.id));
 const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
@@ -367,6 +371,10 @@ const PAGES = {
       ${set(IC.palette, t("accent"), t("accentd"), "")}<div class="swatches" style="padding-left:62px;margin-top:-6px">${SEEDS.map((c) => `<button class="swatch${(s.accent || SEEDS[0]) === c ? " on" : ""}" style="background:${c}" data-a="accent" data-c="${c}"></button>`).join("")}</div>
       ${set(IC.globe, t("language"), LANG === "es" ? "Español" : "English", chev, 'data-a="lang"')}
     </div>`;
+    h += `<div class="gt">${t("devices")}</div><div class="group">
+      ${set(IC.qr, t("remote"), remoteOn ? t("remoteon") : t("remoted"), chev, 'data-a="remote"')}
+      ${set(IC.cast, t("devices"), castDev ? t("castto", { 0: castDev.name }) : (MOBILE ? t("thisphone") : t("thispc")), chev, 'data-a="devices"')}
+    </div>`;
     h += `<div class="gt">${t("seclisten")}</div><div class="group">
       ${set(IC.timer, t("sleep"), sleepAt ? t("sleepset", { n: Math.max(1, Math.round((sleepAt - Date.now()) / 60000)) }) : "", chev, 'data-a="sleep"')}
       ${set(IC.queue, t("queue"), t("nsongs", { n: queue.length }), chev, 'data-a="queue"')}
@@ -467,9 +475,33 @@ function tryPlay(url) {
   });
 }
 let playSeq = 0;
+let castDev = null; // the speaker music is being sent to, or null for this device
+// Android (Rust): the queue is handed to the native Media3 player (window.AstroNative), which keeps
+// playing with the screen off, shows the notification and lock screen controls and serves Android Auto.
+const NATIVE = !MOCK && !!(window.AstroNative && window.AstroNative.available && window.AstroNative.available());
+let nativeSig = "";
+const slim = (x) => ({ id: x.id, title: x.title, artist: x.artist, album: x.album || "", cover: x.cover || "", duration: x.duration || 0 });
+const qsig = () => queue.map((x) => x.id).join(",");
+function queueInsert(at, tr) {
+  queue.splice(at, 0, tr);
+  if (NATIVE && !castDev && nativeSig) { AstroNative.insert(JSON.stringify(slim(tr)), at); nativeSig = qsig(); }
+}
+function pushLibrary() {
+  if (!NATIVE) return;
+  const seen = new Set(); const recents = [];
+  for (const h of S.library.history) if (!seen.has(h.track.id) && recents.length < 60) { seen.add(h.track.id); recents.push(slim(h.track)); }
+  AstroNative.setLibrary(JSON.stringify({ recents, liked: S.library.favorites.map(slim), playlists: S.library.playlists.map((p) => ({ name: p.name, tracks: p.tracks.map(slim) })) }));
+}
 const eng = {
   async play(tr) {
     if (MOCK) return;
+    if (castDev) { au.pause(); if (NATIVE) AstroNative.pause(); if (native) { api.invoke("pause"); native = false; } await api.invoke("cast_load", { track: tr, start: 0 }); return; }
+    if (NATIVE) {
+      if (qsig() === nativeSig) AstroNative.playIndex(qi);
+      else { nativeSig = qsig(); AstroNative.setQueue(JSON.stringify(queue.map(slim)), qi, 0, true); }
+      api.invoke("record", { track: tr }).catch(() => {});
+      return;
+    }
     const seq = ++playSeq;
     if (native) { api.invoke("pause"); native = false; }
     au.volume = S.settings.volume ?? 0.8;
@@ -480,10 +512,10 @@ const eng = {
     if (MOBILE) { const p = await api.invoke("fetch_track", { track: tr }); if (seq === playSeq) await tryPlay(TAURI.core.convertFileSrc(p)); }
     else { native = true; await api.invoke("play", { track: tr }); }
   },
-  pause: () => (native ? api.invoke("pause") : au.pause()),
-  resume: () => (native ? api.invoke("resume") : au.play()),
-  seek: (s) => (native ? api.invoke("seek", { seconds: s }) : (au.currentTime = Math.max(0, s))),
-  volume: (v) => { au.volume = v; api.invoke("set_volume", { volume: v }); },
+  pause: () => (castDev ? api.invoke("cast_cmd", { cmd: "pause" }) : NATIVE ? AstroNative.pause() : native ? api.invoke("pause") : au.pause()),
+  resume: () => (castDev ? api.invoke("cast_cmd", { cmd: "play" }) : NATIVE ? AstroNative.play() : native ? api.invoke("resume") : au.play()),
+  seek: (s) => (castDev ? api.invoke("cast_cmd", { cmd: "seek", value: Math.max(0, s) }) : NATIVE ? AstroNative.seek(Math.max(0, s)) : native ? api.invoke("seek", { seconds: s }) : (au.currentTime = Math.max(0, s))),
+  volume: (v) => { if (castDev) return api.invoke("cast_cmd", { cmd: "volume", value: v }); if (NATIVE) AstroNative.setVolume(v); au.volume = v; api.invoke("set_volume", { volume: v }); },
 };
 const prefetchNext = () => { if (MOCK || !queue.length) return; const n = queue[(qi + 1) % queue.length]; if (n && n !== cur) api.invoke("prefetch", { id: n.id }).catch(() => {}); };
 
@@ -499,7 +531,7 @@ function playList(tracks, i, label, shuf) {
   if (shuf) { for (let j = queue.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [queue[j], queue[k]] = [queue[k], queue[j]]; } i = 0; }
   playAt(i);
 }
-function next(auto) {
+function next(auto) { if (NATIVE && !castDev && !auto) return AstroNative.next();
   if (!queue.length) return;
   if (auto && sleepEnd) { sleepEnd = false; setPlaying(false); toast(t("sleepdone")); return; }
   if (auto && repeatMode === 2) return playAt(qi);
@@ -511,7 +543,7 @@ async function autoRadio() { // like the app: when the queue ends, keep playing 
   if (!cur || S.settings.offline) { setPlaying(false); return; }
   try { const r = await api.invoke("radio", { id: cur.id }); const add = r.filter((x) => !queue.some((q) => q.id === x.id)); if (add.length) { queue.push(...add); playAt(qi + 1); } else setPlaying(false); } catch { setPlaying(false); }
 }
-function prev() { if (pos > 4) eng.seek(0); else playAt(qi - 1); }
+function prev() { if (NATIVE && !castDev) return AstroNative.prev(); if (pos > 4) eng.seek(0); else playAt(qi - 1); }
 function toggle() { if (!cur) return; if (playing) { eng.pause(); setPlaying(false); } else { eng.resume(); setPlaying(true); } }
 function setPlaying(p) {
   playing = p; document.querySelectorAll(".pp").forEach((e) => (e.innerHTML = p ? IC.pause : IC.play));
@@ -533,9 +565,9 @@ function onTick(p) {
 }
 const paint = (el) => el.style.setProperty("--p", (100 * el.value) / el.max + "%");
 listen("player-tick", (p) => native && onTick(p)); listen("player-ended", () => native && next(true)); listen("player-error", (m) => toast(String(m)));
-au.ontimeupdate = () => !native && onTick({ pos: au.currentTime, paused: au.paused });
-au.onpause = au.onplay = () => !native && onTick({ pos: au.currentTime, paused: au.paused });
-au.onended = () => !native && next(true);
+au.ontimeupdate = () => !native && !castDev && onTick({ pos: au.currentTime, paused: au.paused });
+au.onpause = au.onplay = () => !native && !castDev && onTick({ pos: au.currentTime, paused: au.paused });
+au.onended = () => !native && !castDev && next(true);
 if ("mediaSession" in navigator) { const ms = navigator.mediaSession; ms.setActionHandler("play", toggle); ms.setActionHandler("pause", toggle); ms.setActionHandler("nexttrack", () => next()); ms.setActionHandler("previoustrack", prev); }
 
 // ---------------------------------------------------------------- full player
@@ -543,7 +575,7 @@ function drawPlayer() {
   if (!cur) return; const liked = favs().has(cur.id); const d = cur.duration || 0;
   $("#pl-blur").src = cur.cover || "";
   const from = srcLabel || cur.album || "";
-  const dev = MOBILE ? t("thisphone") : t("thispc");
+  const dev = castDev ? castDev.name : MOBILE ? t("thisphone") : t("thispc");
   $("#pl-in").innerHTML = `
     <div class="pl-top" data-p="close" style="cursor:pointer"><div></div><div style="min-width:0"><div class="pl-handle"></div><div class="from">${from ? esc(t("playingfromx", { 0: from })) : "&nbsp;"}</div></div><div></div></div>
     <div class="pl-mid">${showLyr ? `<div class="pl-lyr" id="pl-lyr"><p>${t("loadlyr")}</p></div>` : cur.cover ? `<img class="pl-cov" src="${esc(cur.cover)}" alt="">` : `<div class="pl-cov ph-art" style="display:grid">${mark()}</div>`}</div>
@@ -555,7 +587,7 @@ function drawPlayer() {
       <div class="pl-ctl"><button class="ib" data-p="prev">${IC.rew}</button><button class="ib main" data-p="pp"><span class="pp">${playing ? IC.pause : IC.play}</span></button><button class="ib" data-p="next">${IC.ff}</button></div>
       <div class="pl-vol"><span>${IC.volLo}</span><input type="range" id="pl-vol" min="0" max="100" value="${Math.round((S.settings.volume ?? 0.8) * 100)}"><span>${IC.volHi}</span></div>
       <div class="pl-bot"><button class="ib${showLyr ? " on" : ""}" data-p="lyrics">${IC.lyrb}</button>
-        <div class="pl-pill"><button class="ib${sleepAt || sleepEnd ? " on" : ""}" data-p="sleep">${IC.timer}</button><button class="ib${shuffle ? " on" : ""}" data-p="shuffle">${IC.shuffle}</button><button class="ib${repeatMode ? " on" : ""}" data-p="repeat">${repeatMode === 2 ? IC.repeat1 : IC.repeat}</button></div>
+        <div class="pl-pill"><button class="ib${castDev ? " on" : ""}" data-p="devices">${castDev ? IC.cast : MOBILE ? IC.phone : IC.pc}</button><button class="ib${sleepAt || sleepEnd ? " on" : ""}" data-p="sleep">${IC.timer}</button><button class="ib${shuffle ? " on" : ""}" data-p="shuffle">${IC.shuffle}</button><button class="ib${repeatMode ? " on" : ""}" data-p="repeat">${repeatMode === 2 ? IC.repeat1 : IC.repeat}</button></div>
         <button class="ib" data-p="queue">${IC.queue}</button></div>
       <div class="pl-dev">${esc(dev)}</div>
     </div>`;
@@ -577,12 +609,13 @@ $("#player").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-p]"); if (!b) return; const k = b.dataset.p;
   if (k === "close") openPlayer(false);
   else if (k === "pp") toggle(); else if (k === "next") next(); else if (k === "prev") prev();
-  else if (k === "shuffle") { shuffle = !shuffle; drawPlayer(); }
-  else if (k === "repeat") { repeatMode = (repeatMode + 1) % 3; drawPlayer(); }
+  else if (k === "shuffle") { shuffle = !shuffle; if (NATIVE) AstroNative.setShuffle(shuffle); drawPlayer(); }
+  else if (k === "repeat") { repeatMode = (repeatMode + 1) % 3; if (NATIVE) AstroNative.setRepeat(repeatMode); drawPlayer(); }
   else if (k === "lyrics") { showLyr = !showLyr; drawPlayer(); }
   else if (k === "like") { setState(await api.invoke("toggle_favorite", { track: cur })); drawPlayer(); }
   else if (k === "menu") songMenu(cur);
   else if (k === "sleep") sleepSheet();
+  else if (k === "devices") devicesSheet();
   else if (k === "queue") queueSheet();
   else if (k === "artist") { openPlayer(false); go("artist", { id: "", title: cur.artist.split(",")[0].trim() }); }
 });
@@ -603,8 +636,8 @@ function songMenu(tr, plId) {
   const share = async () => { const u = "https://music.youtube.com/watch?v=" + tr.id; try { await navigator.clipboard.writeText(u); toast(t("copied")); } catch { toast(u); } };
   const top = [[liked ? IC.heartF : IC.heart, t("like"), async () => { setState(await api.invoke("toggle_favorite", { track: tr })); rerender(); }, liked], [IC.addpl, t("playlists"), () => pickPlaylist(tr)], [IC.radio, t("radio"), () => startRadio(tr)], [IC.share, t("sharel"), share]];
   const list = [
-    [IC.next2, t("playnext"), () => { if (!cur) return playList([tr], 0); queue.splice(qi + 1, 0, tr); toast(t("next")); prefetchNext(); }],
-    [IC.addq, t("addqueue"), () => { if (!cur) return playList([tr], 0); queue.push(tr); toast(t("addedq")); }],
+    [IC.next2, t("playnext"), () => { if (!cur) return playList([tr], 0); queueInsert(qi + 1, tr); toast(t("next")); prefetchNext(); }],
+    [IC.addq, t("addqueue"), () => { if (!cur) return playList([tr], 0); queueInsert(queue.length, tr); toast(t("addedq")); }],
     [IC.radio, t("radio"), () => startRadio(tr)],
     [IC.artist, t("view"), goArtist],
   ];
@@ -641,6 +674,83 @@ function sleepSheet() {
     if (k === "close") return; if (k === "off") return setSleep(0); if (k === "plus") return setSleep(Math.round(left / 60000) + 5);
     if (k === "end") { setSleep(0, true); sleepEnd = true; drawPlayer(); return toast(t("endsong")); } setSleep(+k); };
 }
+// ---------------------------------------------------------------- native player events (Android)
+window.__astroNative = (e) => {
+  if (castDev) return;
+  if (e.type === "tick") { onTick({ pos: e.pos, paused: e.paused }); if (e.index !== qi && queue[e.index]) window.__astroNative({ type: "index", index: e.index }); }
+  else if (e.type === "index" && queue[e.index] && e.index !== qi) { qi = e.index; cur = queue[qi]; pos = 0; paintNow(); tintFrom(cur); api.invoke("record", { track: cur }).catch(() => {}); pushRemote(); }
+  else if (e.type === "state") setPlaying(!!e.playing);
+  else if (e.type === "ended") { if (repeatMode === 0) autoRadio(); }
+  else if (e.type === "error") toast(t("noplay") + (e.message ? ": " + e.message : ""));
+};
+if (NATIVE) { api.invoke("local_base").then((b) => AstroNative.setBase(b)).catch(() => {}); }
+
+// ---------------------------------------------------------------- casting (Google Cast, DLNA)
+let castList = null;
+async function devicesSheet() {
+  const draw = () => {
+    const here = `<button class="mitem${castDev ? "" : " on"}" data-dv="-1">${MOBILE ? IC.phone : IC.pc}<span>${MOBILE ? t("thisphone") : t("thispc")}</span></button>`;
+    const list = castList === null ? `<div class="sh-text">${t("searching2")}</div>` : castList.length ? castList.map((d, i) => `<button class="mitem${castDev && castDev.id === d.id ? " on" : ""}" data-dv="${i}">${d.kind === "cast" ? IC.speaker : IC.tv}<span>${esc(d.name)}<br><small style="color:var(--mu)">${d.kind === "cast" ? t("castvia") : t("dlnavia")}</small></span></button>`).join("") : `<div class="sh-text">${t("nodevices")}</div>`;
+    sheet(`<div class="sh-title">${t("devices")}</div>${here}${list}<div class="sh-text" style="margin-top:8px">${t("castnote")}</div><div class="sh-act"><button class="btn tonal" data-dv="scan">${t("rescan")}</button></div>`);
+    sheetActs = [];
+    $("#sheet").onclick = async (e) => {
+      const b = e.target.closest("[data-dv]"); if (!b) return; const k = b.dataset.dv;
+      if (k === "scan") { castList = null; draw(); castList = await api.invoke("cast_discover").catch(() => []); return draw(); }
+      closeSheet();
+      if (k === "-1") return castOff();
+      castOn(castList[+k]);
+    };
+  };
+  draw();
+  if (castList === null || !castList.length) { castList = MOCK ? [{ kind: "cast", id: "x", name: "Salón (Google Home)" }, { kind: "dlna", id: "y", name: "Tele del dormitorio" }] : await api.invoke("cast_discover").catch(() => []); if ($("#sheet").classList.contains("on")) draw(); }
+}
+async function castOn(d) {
+  try {
+    const at = pos; const wasPlaying = playing;
+    await api.invoke("cast_connect", { device: d });
+    castDev = d; au.pause(); if (NATIVE) AstroNative.pause(); if (native) { api.invoke("pause"); native = false; }
+    if (cur) await api.invoke("cast_load", { track: cur, start: at });
+    if (!wasPlaying) setTimeout(() => api.invoke("cast_cmd", { cmd: "pause" }), 1500);
+    toast(t("castto", { 0: d.name })); drawPlayer(); pushRemote();
+  } catch (e) { castDev = null; toast(errText(e)); }
+}
+async function castOff(quiet) {
+  if (!castDev) return; const at = pos; const wasPlaying = playing;
+  castDev = null; api.invoke("cast_stop").catch(() => {});
+  if (!quiet) toast(t("castend"));
+  if (cur) { await eng.play(cur).catch(() => {}); setTimeout(() => { eng.seek(at); if (!wasPlaying) { eng.pause(); setPlaying(false); } }, 400); }
+  drawPlayer(); pushRemote();
+}
+listen("cast-status", (s) => {
+  if (!castDev) return;
+  if (s.state === "closed") return castOff(true);
+  if (s.state === "media") { if (s.ended) return next(true); onTick({ pos: s.pos || 0, paused: !!s.paused }); }
+});
+
+// ---------------------------------------------------------------- phone remote
+let remoteOn = false, remoteInfo = null;
+function remoteState() {
+  const r = document.documentElement;
+  return { track: cur, playing, pos, volume: (+vol.value || 0) / 100, queue: queue.slice(0, 100), index: qi, accent: S.settings.accent || SEEDS[0], color: getComputedStyle(r).getPropertyValue("--pc").trim() || null, device: castDev ? castDev.name : MOBILE ? t("thisphone") : t("thispc") };
+}
+function pushRemote() { if (remoteOn && !MOCK) api.invoke("remote_state", { state: remoteState() }).catch(() => {}); }
+setInterval(pushRemote, 1000);
+async function remoteSheet() {
+  if (!remoteOn) { try { remoteInfo = MOCK ? { url: "http://192.168.1.20:41234/r/…", qr: '<svg viewBox="0 0 10 10" width="240" height="240"><rect width="10" height="10" fill="#fff"/><path d="M1 1h3v3H1zM6 1h3v3H6zM1 6h3v3H1zM6 6h1v1H6zM8 8h1v1H8z"/></svg>' } : await api.invoke("remote_on"); remoteOn = true; pushRemote(); } catch (e) { return toast(errText(e)); } }
+  sheet(`<div class="sh-title">${t("remote")}</div><div class="sh-text">${t("remoted")}</div><div style="display:grid;place-items:center;padding:6px 0 14px"><div style="background:#fff;border-radius:20px;padding:14px;line-height:0">${remoteInfo.qr}</div><div class="t2" style="margin-top:10px;user-select:all">${esc(remoteInfo.url)}</div></div><div class="sh-text">${t("remotenote")}</div><div class="sh-act"><button class="btn tonal" data-rm="off">${t("remoteoff")}</button></div>`);
+  sheetActs = [];
+  $("#sheet").onclick = (e) => { if (e.target.closest("[data-rm]")) { closeSheet(); remoteOn = false; api.invoke("remote_off").catch(() => {}); if (route().name === "settings") render(); } };
+  if (route().name === "settings") render();
+}
+listen("remote-cmd", (c) => {
+  if (c.cmd === "toggle") toggle(); else if (c.cmd === "next") next(); else if (c.cmd === "prev") prev();
+  else if (c.cmd === "volume") { vol.value = Math.round((+c.value || 0) * 100); vol.oninput(); }
+  else if (c.cmd === "seek") eng.seek(+c.value || 0);
+  else if (c.cmd === "playList" && Array.isArray(c.tracks)) playList(c.tracks, +c.index || 0, t("remote"));
+  else if (c.cmd === "playIndex") playAt(+c.index || 0);
+  setTimeout(pushRemote, 300);
+});
+
 function setSleep(n, quiet) {
   clearTimeout(sleepT); sleepAt = 0; sleepEnd = false;
   if (n) { sleepAt = Date.now() + n * 60000; toast(t("sleepset", { n })); sleepT = setTimeout(() => { if (playing) toggle(); sleepAt = 0; toast(t("sleepdone")); drawPlayer(); }, n * 60000); }
@@ -676,6 +786,8 @@ $("#page").addEventListener("click", async (e) => {
     if (k === "autodel") return sheet(`<div class="sh-title">${t("autodel")}</div>` + items([[0, "forever"], [7, "d7"], [30, "d30"], [90, "d90"]].map(([d, kk]) => [IC.history, t(kk), async () => { await saveSettings({ history_days: d }); render(); }, (S.settings.history_days || 0) === d])));
     if (k === "conns") { const c = await api.invoke("connections"); return sheet(`<div class="sh-title">${t("conns")}</div><div class="sh-text">${t("connsd")}</div>` + (c.length ? c.map((x) => `<div class="conn"><span>${esc(x.host)}</span><span>${t("req", { n: x.requests })}</span></div>`).join("") : `<div class="sh-text">${t("noconn")}</div>`)); }
     if (k === "sleep") return sleepSheet();
+    if (k === "remote") return remoteSheet();
+    if (k === "devices") return devicesSheet();
     if (k === "welcome") return showWelcome();
     if (k === "erase") { sheet(`<div class="sh-title">${t("eraset")}</div><div class="sh-text">${t("erased")}</div><div class="sh-act"><button class="btn tonal" data-x>${t("cancel")}</button><button class="btn danger" data-ok>${t("del")}</button></div>`); $("#sheet [data-x]").onclick = closeSheet; $("#sheet [data-ok]").onclick = () => api.invoke("erase_all"); return; }
     return;
@@ -697,7 +809,7 @@ $("#mini").onclick = (e) => { if (!e.target.closest("button,input")) openPlayer(
 $("#mini-pp").onclick = toggle; $("#mini-next").onclick = () => next(); $("#mini-prev").onclick = prev;
 const vol = $("#vol"); vol.oninput = () => { paint(vol); eng.volume(vol.value / 100); };
 async function setLang(l) { LANG = l; await saveSettings({ lang: l }); applyLang(); render(); }
-function applyLang() { document.documentElement.lang = LANG; document.querySelectorAll("[data-tr]").forEach((n) => (n.textContent = t(n.dataset.tr))); if (cur) drawPlayer(); }
+function applyLang() { document.documentElement.lang = LANG; if (NATIVE) AstroNative.setLanguage(LANG); document.querySelectorAll("[data-tr]").forEach((n) => (n.textContent = t(n.dataset.tr))); if (cur) drawPlayer(); }
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { if ($("#sheet").classList.contains("on")) closeSheet(); else if ($("#player").classList.contains("open")) openPlayer(false); else back(); return; }
   if (e.key === "F11") { e.preventDefault(); if (!MOCK) { const w = TAURI.window.getCurrentWindow(); w.isFullscreen().then((f) => w.setFullscreen(!f)); } return; }
@@ -773,6 +885,32 @@ async function welcomeClick(e) {
   }
 }
 
+// ---------------------------------------------------------------- liquid glass
+// Chromium web views can bend what's behind the glass (backdrop-filter: url(#liquid-lens)); a
+// displacement map, made once here, pushes the edges inward like the rim of a lens.
+(function lens() {
+  const chromium = (/Chrome\//.test(navigator.userAgent) && !MOCK) || /[?&]lens/.test(location.search);
+  if (!chromium) return;
+  const N = 256, c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d"); const im = x.createImageData(N, N);
+  const edge = 0.16, r = 0.5;
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+    const u = (px + 0.5) / N - 0.5, v = (py + 0.5) / N - 0.5;
+    // distance to the edge of a rounded square, and the direction towards it
+    const qx = Math.abs(u) - (r - edge), qy = Math.abs(v) - (r - edge);
+    const ox = Math.max(qx, 0), oy = Math.max(qy, 0); const out = Math.hypot(ox, oy);
+    const d = edge - out; // 0 at the rim, `edge` where the flat middle starts
+    let dx = 0, dy = 0;
+    if (d < edge) { const k = Math.pow(1 - Math.max(0, d) / edge, 2); const nx = out ? (ox * Math.sign(u)) / out : 0, ny = out ? (oy * Math.sign(v)) / out : 0; dx = -nx * k; dy = -ny * k; }
+    const i = (py * N + px) * 4; im.data[i] = 128 + dx * 127; im.data[i + 1] = 128 + dy * 127; im.data[i + 2] = 128; im.data[i + 3] = 255;
+  }
+  x.putImageData(im, 0, 0);
+  document.getElementById("lens-map").setAttribute("href", c.toDataURL());
+  document.documentElement.classList.add("lens");
+})();
+// The glint follows the pointer across each piece of glass.
+document.addEventListener("pointermove", (e) => { const g = e.target.closest && e.target.closest(".glass"); if (g) { const r = g.getBoundingClientRect(); g.style.setProperty("--mx", e.clientX - r.left + "px"); g.style.setProperty("--my", e.clientY - r.top + "px"); } }, { passive: true });
+$("#page").addEventListener("scroll", () => $("#topfade").classList.toggle("on", $("#page").scrollTop > 8), { passive: true });
+
 // ---------------------------------------------------------------- opening, exactly like the app's OpeningReveal
 const MARK_PATH = "M83.99,33.47 L83.62,33.34 L82.56,33.78 L81.63,33.96 L80.20,33.96 L78.52,33.53 L77.33,32.97 L75.90,32.04 L73.60,30.23 L72.11,29.24 L69.99,28.36 L68.62,28.18 L67.50,28.24 L66.13,28.74 L65.57,29.24 L65.20,30.17 L65.20,59.04 L65.08,59.66 L64.64,60.72 L63.89,61.84 L63.02,62.77 L61.40,64.02 L59.85,64.89 L58.11,65.57 L56.68,65.95 L54.81,66.20 L52.69,66.20 L51.57,66.07 L49.58,65.64 L48.09,65.14 L45.48,63.83 L43.11,62.09 L41.49,60.47 L40.12,58.67 L39.38,57.42 L38.13,54.50 L37.64,52.57 L37.45,51.26 L37.39,48.65 L37.76,46.04 L38.69,43.11 L40.12,40.37 L41.87,38.01 L43.61,36.20 L45.16,34.90 L46.53,33.96 L48.15,33.03 L50.20,32.10 L50.58,31.60 L50.52,31.04 L50.02,30.60 L48.96,30.36 L46.53,30.36 L44.17,30.73 L41.99,31.29 L39.94,32.04 L37.45,33.22 L35.77,34.21 L34.09,35.40 L32.16,37.01 L29.98,39.25 L28.43,41.24 L27.18,43.17 L25.94,45.60 L25.25,47.28 L24.32,50.45 L23.82,53.69 L23.82,57.11 L24.13,59.48 L24.63,61.65 L25.25,63.58 L26.19,65.76 L27.37,67.94 L28.30,69.37 L30.11,71.67 L32.22,73.85 L33.47,74.91 L35.40,76.28 L36.89,77.15 L38.69,78.02 L41.37,78.95 L43.92,79.51 L45.60,79.70 L47.59,79.76 L49.96,79.57 L52.01,79.20 L54.31,78.52 L56.80,77.46 L58.48,76.52 L59.72,75.72 L61.96,73.91 L63.77,72.04 L64.95,70.55 L65.95,69.06 L66.88,67.38 L67.69,65.51 L68.44,63.21 L68.81,61.47 L69.06,59.48 L69.12,37.26 L69.68,36.95 L71.30,37.01 L72.98,37.57 L75.28,38.69 L76.59,39.07 L78.45,39.13 L79.70,38.88 L81.44,38.01 L82.68,36.83 L83.12,36.20 L83.74,34.90 L83.99,34.03 Z";
 function bezier(x1, y1, x2, y2) {
@@ -828,6 +966,8 @@ function appDive(d) { // the app comes forward as it's revealed (1.14 → 1)
   if (MOCK && h === "lyrics") { playList(demo, 1, "Midnight Orbit"); showLyr = true; drawPlayer(); openPlayer(true); }
   if (MOCK && h === "artist") go("artist", { id: "x", title: "Luna Park" });
   if (MOCK && h === "album") go("album", { id: "x", title: "" });
+  if (MOCK && h === "devices") { playList(demo, 0); setTimeout(devicesSheet, 100); }
+  if (MOCK && h === "remote") { stack = [{ name: "settings" }]; render(); setTimeout(remoteSheet, 100); }
   if (MOCK && h === "menu") { playList(demo, 0); setTimeout(() => songMenu(demo[2]), 100); }
   if (MOCK && (h === "home" || h === "library")) { playList(demo, 0, "Noches"); setTimeout(() => setPlaying(true)); }
   if (!S.settings.onboarded) showWelcome(MOCK ? +((h.match(/welcome(\d)/) || [0, 0])[1]) : 0);

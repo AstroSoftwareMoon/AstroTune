@@ -11,7 +11,6 @@ use rustypipe::{
     model::{AlbumItem, AlbumType, ArtistItem, AudioFormat, MusicPlaylistItem, Thumbnail, TrackItem},
     param::StreamFilter,
 };
-use rustypipe_downloader::Downloader;
 
 use crate::{
     model::{Card, Mood, Page, Shelf, Track},
@@ -23,7 +22,7 @@ use crate::{
 /// telemetry, and it refuses to do anything in offline mode.
 pub struct Net {
     rp: RustyPipe,
-    dl: Downloader,
+    http: reqwest::Client,
     log: Arc<ConnLog>,
     offline: Arc<AtomicBool>,
 }
@@ -106,8 +105,11 @@ pub fn playlist_id(input: &str) -> Option<String> {
 impl Net {
     pub fn new(cache_dir: PathBuf, log: Arc<ConnLog>, offline: Arc<AtomicBool>) -> Result<Self, String> {
         let rp = RustyPipe::builder().storage_dir(cache_dir).build().map_err(err)?;
-        let dl = Downloader::new(&rp);
-        Ok(Self { rp, dl, log, offline })
+        let http = reqwest::Client::builder()
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .build()
+            .map_err(err)?;
+        Ok(Self { rp, http, log, offline })
     }
 
     fn online(&self) -> Result<(), String> {
@@ -285,34 +287,78 @@ impl Net {
 
     /// A direct audio stream for the track, so playback starts at once instead of after a full
     /// download. `opus_first` prefers Opus/WebM (Linux web views play it out of the box).
-    pub async fn stream(&self, video_id: &str, opus_first: bool) -> Result<(String, String), String> {
+    pub async fn stream(&self, video_id: &str, opus_first: bool) -> Result<crate::yt::Stream, String> {
         self.online()?;
-        self.log.note("music.youtube.com");
-        self.log.note("googlevideo.com");
-        let p = self.rp.query().player(video_id).await.map_err(err)?;
-        let formats = if opus_first { vec![AudioFormat::Webm, AudioFormat::M4a] } else { vec![AudioFormat::M4a, AudioFormat::Webm] };
-        for f in formats {
-            let filter = StreamFilter::new().no_video().audio_formats(vec![f]);
-            if let Some(s) = p.select_audio_stream(&filter) {
-                return Ok((s.url.clone(), s.mime.clone()));
+        self.log.note("youtube.com");
+        // First the Android app's way (app identities with plain URLs); rustypipe only as a fallback.
+        match crate::yt::stream(&self.http, video_id, "es", opus_first).await {
+            Ok(s) => Ok(s),
+            Err(first) => {
+                let p = self.rp.query().player(video_id).await.map_err(|e| format!("{first} · {e}"))?;
+                let formats = if opus_first { vec![AudioFormat::Webm, AudioFormat::M4a] } else { vec![AudioFormat::M4a, AudioFormat::Webm] };
+                for f in formats {
+                    let filter = StreamFilter::new().no_video().audio_formats(vec![f]);
+                    if let Some(s) = p.select_audio_stream(&filter) {
+                        return Ok(crate::yt::Stream { url: s.url.clone(), mime: s.mime.split(';').next().unwrap_or("audio/mp4").into(), ua: String::new(), size: Some(s.size) });
+                    }
+                }
+                Err(first)
             }
         }
-        Err("no-stream".into())
     }
 
-    /// Downloads the track's audio (AAC in an .m4a) to `dest`.
-    pub async fn fetch_audio(&self, video_id: &str, dest: &Path) -> Result<(), String> {
-        self.online()?;
-        self.log.note("music.youtube.com");
+    /// The shared HTTP client (used by the local audio server).
+    pub fn http(&self) -> &reqwest::Client {
+        &self.http
+    }
+
+    /// Notes a googlevideo fetch in the connection log.
+    pub fn note_media(&self) {
         self.log.note("googlevideo.com");
-        let filter = StreamFilter::new().no_video().audio_formats(vec![AudioFormat::M4a]);
-        self.dl
-            .id(video_id)
-            .to_file(dest)
-            .stream_filter(filter)
-            .download()
-            .await
-            .map_err(err)?;
+    }
+
+    /// Downloads the track's audio to `dest`, in 8 MB ranges with the identity that minted the URL.
+    pub async fn fetch_audio(&self, video_id: &str, dest: &Path) -> Result<(), String> {
+        use tokio::io::AsyncWriteExt;
+        let s = self.stream(video_id, false).await?;
+        self.note_media();
+        let mut out = tokio::fs::File::create(dest).await.map_err(err)?;
+        let total = match s.size {
+            Some(n) => n,
+            None => {
+                let r = self.media_get(&s, None).send().await.map_err(err)?;
+                let b = r.bytes().await.map_err(err)?;
+                out.write_all(&b).await.map_err(err)?;
+                return Ok(());
+            }
+        };
+        let mut at = 0u64;
+        while at < total {
+            let end = (at + 8 * 1024 * 1024).min(total) - 1;
+            let r = self.media_get(&s, Some((at, end))).send().await.map_err(err)?;
+            if !r.status().is_success() {
+                return Err(format!("HTTP {}", r.status().as_u16()));
+            }
+            let b = r.bytes().await.map_err(err)?;
+            if b.is_empty() {
+                break;
+            }
+            out.write_all(&b).await.map_err(err)?;
+            at += b.len() as u64;
+        }
+        out.flush().await.map_err(err)?;
         Ok(())
+    }
+
+    /// A request for the stream's bytes, dressed as the client that minted the URL.
+    pub fn media_get(&self, s: &crate::yt::Stream, range: Option<(u64, u64)>) -> reqwest::RequestBuilder {
+        let mut r = self.http.get(&s.url);
+        if !s.ua.is_empty() {
+            r = r.header("User-Agent", &s.ua);
+        }
+        if let Some((a, b)) = range {
+            r = r.header("Range", format!("bytes={a}-{b}"));
+        }
+        r
     }
 }

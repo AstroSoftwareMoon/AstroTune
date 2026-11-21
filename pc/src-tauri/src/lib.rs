@@ -19,6 +19,8 @@ use astrotune_core::{
 use tauri::{AppHandle, Manager, State};
 
 mod audio;
+mod cast;
+mod server;
 
 struct App {
     store: Arc<Store>,
@@ -27,8 +29,8 @@ struct App {
     offline: Arc<AtomicBool>,
     audio: audio::Player,
     cache: PathBuf,
-    /// Stream addresses already looked up (they stay valid for hours), so skipping ahead is instant.
-    streams: std::sync::Mutex<std::collections::HashMap<String, (std::time::Instant, String, String)>>,
+    hub: Arc<server::Hub>,
+    cast: std::sync::Mutex<Option<cast::Session>>,
 }
 
 /// Keeps the audio cache small: the 40 most recent tracks stay, so replays work even offline.
@@ -82,14 +84,9 @@ async fn lookup(app: &App, id: &str) -> Result<Source, String> {
     if file.exists() {
         return Ok(Source { kind: "file", src: file.to_string_lossy().into_owned(), mime: "audio/mp4".into() });
     }
-    if let Some((at, url, mime)) = app.streams.lock().unwrap().get(id).cloned() {
-        if at.elapsed().as_secs() < 3 * 3600 {
-            return Ok(Source { kind: "url", src: url, mime });
-        }
-    }
-    let (url, mime) = app.net.stream(id, cfg!(target_os = "linux")).await?;
-    app.streams.lock().unwrap().insert(id.to_string(), (std::time::Instant::now(), url.clone(), mime.clone()));
-    Ok(Source { kind: "url", src: url, mime })
+    // Look the stream up now (so the first byte comes fast), then hand the window our local address for it.
+    let s = app.hub.stream(id, false).await?;
+    Ok(Source { kind: "url", src: app.hub.local_url(id), mime: s.mime })
 }
 
 /// Where to play a track from: the local copy if there is one, otherwise a direct stream.
@@ -251,6 +248,106 @@ fn erase_all(app: State<'_, App>, handle: AppHandle) {
     handle.exit(0);
 }
 
+
+/// Where the native Android player fetches songs from (AstroTune's own server, 127.0.0.1 only).
+#[tauri::command]
+fn local_base(app: State<'_, App>) -> String {
+    format!("http://127.0.0.1:{}/a/{}/", app.hub.local_port.lock().unwrap(), app.hub.token)
+}
+
+/// Notes a song in the history (when the native player moved on by itself).
+#[tauri::command]
+fn record(app: State<'_, App>, track: Track) {
+    app.store.record_play(&track);
+}
+
+// ------------------------------------------------------------------ phone remote
+
+#[derive(serde::Serialize)]
+struct RemoteInfo {
+    url: String,
+    qr: String,
+}
+
+/// Turns on "Connect your phone": a page on this computer, on the local network only, behind a random token.
+#[tauri::command]
+fn remote_on(app: State<'_, App>) -> Result<RemoteInfo, String> {
+    let port = app.hub.lan_on()?;
+    let ip = server::lan_ip().ok_or("no-network")?;
+    let url = format!("http://{ip}:{port}/r/{}", app.hub.lan_token);
+    let qr = qrcode::QrCode::new(url.as_bytes()).map_err(|e| e.to_string())?;
+    let svg = qr.render::<qrcode::render::svg::Color>().min_dimensions(240, 240).dark_color(qrcode::render::svg::Color("#000")).light_color(qrcode::render::svg::Color("#fff")).build();
+    Ok(RemoteInfo { url, qr: svg })
+}
+
+#[tauri::command]
+fn remote_off(app: State<'_, App>) {
+    if app.cast.lock().unwrap().is_none() {
+        app.hub.lan_off();
+    }
+}
+
+/// What the phone remote shows: the window pushes it whenever it changes.
+#[tauri::command]
+fn remote_state(app: State<'_, App>, state: serde_json::Value) {
+    *app.hub.remote_state.lock().unwrap() = state;
+}
+
+// ------------------------------------------------------------------ casting
+
+#[tauri::command]
+async fn cast_discover() -> Result<Vec<cast::Device>, String> {
+    tauri::async_runtime::spawn_blocking(|| cast::discover(std::time::Duration::from_secs(3))).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cast_connect(app: State<'_, App>, handle: AppHandle, device: cast::Device) -> Result<(), String> {
+    if let Some(old) = app.cast.lock().unwrap().take() {
+        old.send(cast::Cmd::Stop);
+    }
+    app.hub.lan_on()?;
+    let s = tauri::async_runtime::spawn_blocking(move || cast::connect(device, handle)).await.map_err(|e| e.to_string())??;
+    *app.cast.lock().unwrap() = Some(s);
+    Ok(())
+}
+
+#[tauri::command]
+async fn cast_load(app: State<'_, App>, track: Track, start: f64) -> Result<(), String> {
+    let s = if cached_file(&app, &track.id).exists() { None } else { Some(app.hub.stream(&track.id, false).await?) };
+    let url = app.hub.lan_media_url(&track.id)?;
+    let mime = s.map(|s| s.mime).unwrap_or_else(|| "audio/mp4".into());
+    app.store.record_play(&track);
+    let m = cast::Media { url, mime, title: track.title.clone(), artist: track.artist.clone(), cover: track.cover.clone(), duration: track.duration as f64, start };
+    match &*app.cast.lock().unwrap() {
+        Some(s) => {
+            s.send(cast::Cmd::Load(m));
+            Ok(())
+        }
+        None => Err("no-cast".into()),
+    }
+}
+
+#[tauri::command]
+fn cast_cmd(app: State<'_, App>, cmd: String, value: Option<f64>) {
+    let c = match cmd.as_str() {
+        "play" => cast::Cmd::Play,
+        "pause" => cast::Cmd::Pause,
+        "seek" => cast::Cmd::Seek(value.unwrap_or(0.0)),
+        "volume" => cast::Cmd::Volume(value.unwrap_or(0.5) as f32),
+        _ => return,
+    };
+    if let Some(s) = &*app.cast.lock().unwrap() {
+        s.send(c);
+    }
+}
+
+#[tauri::command]
+fn cast_stop(app: State<'_, App>) {
+    if let Some(s) = app.cast.lock().unwrap().take() {
+        s.send(cast::Cmd::Stop);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -265,7 +362,8 @@ pub fn run() {
                 Net::new(cache.join("client"), log.clone(), offline.clone()).map_err(|e| -> Box<dyn std::error::Error> { e.into() })?,
             );
             let audio = audio::Player::new(tauri_app.handle().clone(), settings.volume);
-            tauri_app.manage(App { store, net, log, offline, audio, cache: cache.join("audio"), streams: Default::default() });
+            let hub = server::Hub::new(net.clone(), cache.join("audio"), tauri_app.handle().clone());
+            tauri_app.manage(App { store, net, log, offline, audio, cache: cache.join("audio"), hub, cast: Default::default() });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -275,6 +373,16 @@ pub fn run() {
             resolve,
             prefetch,
             keep,
+            remote_on,
+            local_base,
+            record,
+            remote_off,
+            remote_state,
+            cast_discover,
+            cast_connect,
+            cast_load,
+            cast_cmd,
+            cast_stop,
             search_artists,
             search_albums,
             artist,

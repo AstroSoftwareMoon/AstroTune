@@ -47,6 +47,6 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 
 ## ⚠️ Importante
 
-Las builds no llevan certificado de pago: **Windows SmartScreen** y **macOS Gatekeeper** pueden avisar (en macOS: clic derecho → Abrir). Los APK de Android están firmados con clave de depuración (desinstala la versión anterior antes de actualizar). La versión **Rust (beta)** reproduce con el WebView y todavía no tiene Android Auto, Chromecast ni controles en la pantalla de bloqueo: para eso usa la de Kotlin. Alexa no admite emisión directa: úsala como altavoz Bluetooth.
+Las builds no llevan certificado de pago: **Windows SmartScreen** y **macOS Gatekeeper** pueden avisar (en macOS: clic derecho → Abrir). Los APK de Android están firmados con clave de depuración (desinstala la versión anterior antes de actualizar). Alexa no admite emisión directa: úsala como altavoz Bluetooth.
 
 Fork de OpenTune.

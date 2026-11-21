@@ -6,3 +6,4 @@ pub mod model;
 pub mod net;
 pub mod privacy;
 pub mod store;
+pub mod yt;

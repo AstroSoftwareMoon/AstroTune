@@ -402,7 +402,7 @@ fun HomeScreen(
                 }
             }
             if (ui.homeStreaks && badges.isNotEmpty()) item(key = "streaks") { StreakPills(badges) }
-            item(key = "festival") { FestivalCard() }
+            // No festival greetings: they needed the rough location, and AstroTune never asks for it.
             itemsIndexed(runtime.banners.filter { platform in it.platforms && it.id !in closedBanners }, key = { _, banner -> "remote-banner:${banner.id}" }) { _, banner ->
                 RemoteBannerCard(banner)
             }

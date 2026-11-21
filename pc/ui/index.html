@@ -8,9 +8,12 @@
 </head>
 <body>
 <div id="tint"></div>
+<div id="topfade"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="liquid-lens" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB" primitiveUnits="objectBoundingBox"><feImage id="lens-map" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map"/><feDisplacementMap in="SourceGraphic" in2="map" scale="0.09" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+
 
 <div id="app">
-  <nav id="rail" class="chrome">
+  <nav id="rail" class="chrome glass">
     <div class="mark" id="rail-mark"></div>
     <button class="tab" data-tab="home"><span class="ic o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="ic f"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><b data-tr="home"></b></button>
     <button class="tab" data-tab="explore"><span class="ic o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span><span class="ic f"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.2 5.8-2.4 6-6 2.4 2.4-6z"/></svg></span><b data-tr="explore"></b></button>

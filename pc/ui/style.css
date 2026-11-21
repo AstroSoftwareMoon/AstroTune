@@ -412,3 +412,36 @@ input[type=range]::-webkit-slider-thumb { width: 16px; height: 16px; margin-top:
 .mood.cov { padding: 0; display: block; background: var(--s2) !important; }
 .mood.cov .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 12px 10px; background: linear-gradient(transparent, rgba(0,0,0,.7)); font-size: 14px; }
 .mood.cov .cap small { display: block; font-weight: 400; font-size: 12px; color: rgba(255,255,255,.75); }
+
+/* ================= Liquid Glass ================= */
+.glass { position: relative; isolation: isolate;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.025) 45%, rgba(255,255,255,.05)), rgba(24, 24, 28, .36);
+  backdrop-filter: blur(16px) saturate(1.9) brightness(1.06); -webkit-backdrop-filter: blur(16px) saturate(1.9) brightness(1.06);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 1px .5px rgba(255,255,255,.5), inset 0 -1px 1px rgba(255,255,255,.1), inset 1px 0 1px rgba(255,255,255,.06), inset -1px 0 1px rgba(255,255,255,.06), 0 14px 44px rgba(0,0,0,.45); }
+/* the specular glint that follows the pointer */
+.glass::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(220px circle at var(--mx, 28%) var(--my, -30%), rgba(255,255,255,.22), transparent 62%); mix-blend-mode: soft-light; transition: opacity .3s; }
+/* a thin bright rim, brighter on top, like light caught in the edge of the glass */
+.glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; padding: 1px;
+  background: linear-gradient(160deg, rgba(255,255,255,.55), rgba(255,255,255,.06) 35%, rgba(255,255,255,0) 60%, rgba(255,255,255,.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+/* Chromium (Windows WebView2, Android WebView): real refraction at the edges */
+:root.lens .glass { backdrop-filter: url(#liquid-lens) blur(5px) saturate(1.9) brightness(1.06); }
+:root.noglass .glass::before, :root.noglass .glass::after { display: none; }
+#rail .tab, #dock .tab, #orb, .tools .ib, .acct { position: relative; z-index: 1; }
+#dock .tab.on, #rail .tab.on { background: color-mix(in srgb, var(--pri) 24%, transparent); color: var(--pri); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pri) 45%, transparent), inset 0 1px 0 rgba(255,255,255,.18); }
+#rail .tab.on .ic { color: var(--pri); }
+/* top of the page blurs what scrolls under it */
+#topfade { position: fixed; left: 0; right: 0; top: 0; height: calc(34px + var(--safe-t)); z-index: 15; pointer-events: none;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: linear-gradient(rgba(0,0,0,.55), transparent);
+  -webkit-mask: linear-gradient(#000 40%, transparent); mask: linear-gradient(#000 40%, transparent); opacity: 0; transition: opacity .25s; }
+#topfade.on { opacity: 1; }
+@media (min-width: 900px) {
+  /* the side rail floats as one piece of glass, like the app on tablets */
+  #app { grid-template-columns: 1fr; }
+  #rail { position: fixed; z-index: 18; left: 14px; top: 14px; bottom: 112px; width: 88px; border-radius: 30px; border-right: 0; padding: 16px 0; justify-content: flex-start; }
+  #page { padding-left: 112px; }
+  #chrome { left: 0; padding-left: 14px; }
+  #topfade { left: 0; }
+}

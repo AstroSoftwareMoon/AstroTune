@@ -69,6 +69,8 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-36 build-tools;36.0.0 ndk;27.2.12479018
+      - name: libclang for bindgen
+        run: sudo apt-get update && sudo apt-get install -y libclang-dev clang
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi
@@ -82,6 +84,9 @@ jobs:
         working-directory: pc
         run: |
           export NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
+          SYSROOT="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+          export BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android="--sysroot=$SYSROOT -I$SYSROOT/usr/include/aarch64-linux-android"
+          export BINDGEN_EXTRA_CLANG_ARGS_armv7_linux_androideabi="--sysroot=$SYSROOT -I$SYSROOT/usr/include/arm-linux-androideabi"
           npm ci --ignore-scripts
           npx tauri icon src-tauri/icons/icon.png
           npx tauri android init --ci

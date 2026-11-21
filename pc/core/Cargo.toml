@@ -17,3 +17,5 @@ rustypipe-downloader = { version = "0.3", default-features = false, features = [
 [target.'cfg(target_os = "android")'.dependencies]
 rustypipe = { version = "0.11", default-features = false, features = ["rustls-tls-webpki-roots"] }
 rustypipe-downloader = { version = "0.3", default-features = false, features = ["rustls-tls-webpki-roots"] }
+# No prebuilt QuickJS bindings exist for Android targets, so they are generated while building.
+rquickjs = { version = "0.9", features = ["bindgen"] }

@@ -45,4 +45,4 @@ jobs:
         run: |
           gh release create "$VERSION" out/*.apk --target "${GITHUB_SHA}" \
             --title "AstroTune $VERSION" \
-            --notes "Primera versión de AstroTune, fork de OpenTune (GPL-3.0). Instala el APK universal o el de tu arquitectura (arm64-v8a en casi todos los móviles actuales). Firmado con clave de depuración."
+            --notes "AstroTune: reproductor de música 100 % privado y anónimo. Sin ubicación, sin micrófono, sin estadísticas, sin cuenta y sin rastreo: ningún dato tuyo sale del móvil. Fork de OpenTune (GPL-3.0). Instala el APK universal o el de tu arquitectura (arm64-v8a en casi todos los móviles actuales). Firmado con clave de depuración."

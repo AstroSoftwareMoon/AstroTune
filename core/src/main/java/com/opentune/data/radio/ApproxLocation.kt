@@ -25,12 +25,13 @@ object ApproxLocation {
     private const val FRESH_MS = 30 * 60 * 1000L
     private const val WAIT_MS = 10_000L
 
-    fun granted(context: Context) =
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    /** AstroTune never uses location: always false, whatever the system permission says. */
+    @Suppress("UNUSED_PARAMETER")
+    fun granted(context: Context): Boolean = false
 
     /** Whether location is switched on in the phone's settings. */
     fun enabled(context: Context): Boolean {
+        if (com.opentune.data.Privacy.OFFLINE_SERVICES) return false
         val lm = context.getSystemService(LocationManager::class.java) ?: return false
         return LocationManagerCompat.isLocationEnabled(lm)
     }
@@ -63,6 +64,7 @@ object ApproxLocation {
 
     /** Names the area around a rounded position; null when the phone has no geocoder or it doesn't answer. */
     suspend fun place(context: Context, latitude: Double, longitude: Double): Place? = withContext(Dispatchers.IO) {
+        if (com.opentune.data.Privacy.OFFLINE_SERVICES) return@withContext null
         if (!Geocoder.isPresent()) return@withContext null
         runCatching {
             @Suppress("DEPRECATION")

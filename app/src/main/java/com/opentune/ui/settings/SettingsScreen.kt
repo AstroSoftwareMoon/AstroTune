@@ -1838,18 +1838,20 @@ private fun settingsSections(
                 Entry("Check for updates automatically", "update new version release auto") {
                     ToggleRow("Check for updates automatically", ui.checkForUpdates, { v -> AppSettings.updateUi { it.copy(checkForUpdates = v) }; com.opentune.data.UpdateCheck.schedule(context) }, summary = "Looks for a new release on GitHub every few hours, in the background too, and offers to install it", icon = Icons.Rounded.SystemUpdate)
                 },
-                Entry("Count this phone in usage numbers", "anonymous usage statistics analytics counter privacy telemetry") {
-                    ToggleRow(
-                        "Count this phone in usage numbers",
-                        ui.countUsage,
-                        { v -> AppSettings.updateUi { it.copy(countUsage = v) }; com.opentune.data.Usage.consentChanged(v) },
-                        summary = "Shares a random installation ID, app version, active dates and daily play totals. No hardware ID, account or song names. Reinstalls get a new ID; updates keep it.",
+                Entry("Private and anonymous", "anonymous privacy telemetry statistics location data private tracking") {
+                    NavRow(
+                        "Private and anonymous",
+                        {},
+                        summary = "AstroTune sends no usage statistics, asks for no location and has no account or tracking. No ID of any kind leaves this phone.",
                         icon = Icons.Rounded.Info,
                     )
                 },
                 Entry("AstroTune community", "github discord community addons developer") { CommunityBanner() },
                 Entry("Support AstroTune", "donate upi pay money tip support developer") {
                     NavRow("Support AstroTune", { supportDialog = true }, summary = "A small thank-you helps keep AstroTune going", icon = Icons.Rounded.Favorite)
+                },
+                Entry("Your data stays here", "privacy anonymous private data stays on device") {
+                    NavRow("Your data stays here", {}, summary = "Private by design: your library, history and settings stay on this phone. Nothing is uploaded, nothing is tracked, you stay anonymous.", icon = Icons.Rounded.Info)
                 },
                 Entry("Star on GitHub", "star github rate like") {
                     NavRow("Star on GitHub", {

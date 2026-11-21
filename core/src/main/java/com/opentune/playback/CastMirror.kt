@@ -38,6 +38,15 @@ class CastMirror(private val context: Context, private val player: Player, priva
 
     val active: Boolean get() = receiver != null
 
+    /** The device's own volume, 0 to 1, when it has said. */
+    val remoteVolume: Float? get() = receiver?.status?.value?.volume
+
+    /** Sets the device's volume (the phone's volume keys follow it while casting). */
+    fun setVolume(level: Float) {
+        val r = receiver ?: return
+        scope.launch { runCatching { r.setVolume(level.coerceIn(0f, 1f)) } }
+    }
+
     fun attach(r: Receiver) {
         if (receiver === r) return
         detach(resume = false)

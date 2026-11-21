@@ -1,0 +1,1 @@
+AstroTune 1.9.2: while casting to Google Home, Chromecast or a DLNA speaker, the phone volume keys turn the speaker up and down.

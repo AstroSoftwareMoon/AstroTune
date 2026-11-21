@@ -526,7 +526,10 @@ class PlaybackService : MediaLibraryService() {
         castMirror = CastMirror(context, player, scope)
         scope.launch {
             com.opentune.cast.Cast.session.map { it?.receiver }.distinctUntilChanged().collect { r ->
-                if (r != null) castMirror?.attach(r) else castMirror?.detach()
+                if (r != null) {
+                    castMirror?.attach(r)
+                    matchPhoneVolumeToCast(r)
+                } else castMirror?.detach()
             }
         }
         scope.launch {
@@ -2353,6 +2356,25 @@ class PlaybackService : MediaLibraryService() {
     /** Set while paused by "Pause at zero volume", so raising it again resumes. */
     private var pausedAtZero = false
 
+    /** True while the phone's volume is being set to the speaker's, so that change isn't sent back. */
+    @Volatile private var syncingCastVolume = false
+
+    /**
+     * When casting starts, the phone's volume is set to the speaker's own, so the first press of a
+     * volume key moves it one step from where it is rather than jumping to the phone's level.
+     */
+    private fun matchPhoneVolumeToCast(r: com.opentune.cast.Receiver) {
+        scope.launch {
+            val level = kotlinx.coroutines.withTimeoutOrNull(4_000) { r.status.first { it.volume != null }.volume } ?: return@launch
+            val am = audioManager ?: return@launch
+            val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            syncingCastVolume = true
+            runCatching { am.setStreamVolume(AudioManager.STREAM_MUSIC, (level * max).roundToInt().coerceIn(0, max), 0) }
+            delay(300)
+            syncingCastVolume = false
+        }
+    }
+
     private val volumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             volumeTick.value++
@@ -2363,6 +2385,11 @@ class PlaybackService : MediaLibraryService() {
     private fun onMusicVolume() {
         val player = mediaSession?.player ?: return
         val volume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: return
+        // While casting the phone is silent, so its volume keys turn the speaker up and down instead.
+        castMirror?.takeIf { it.active && !syncingCastVolume }?.let { mirror ->
+            val max = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC)?.takeIf { it > 0 } ?: return@let
+            mirror.setVolume(volume.toFloat() / max)
+        }
         if (!AppSettings.playback.value.pauseAtZeroVolume) {
             pausedAtZero = false
             return

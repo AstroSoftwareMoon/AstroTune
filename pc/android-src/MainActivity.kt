@@ -1,7 +1,11 @@
 package com.astrotune.rs
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
@@ -45,6 +49,19 @@ class MainActivity : TauriActivity() {
             f.addListener({ runCatching { f.get().addListener(events) } }, MoreExecutors.directExecutor())
         }
         main.post(ticker)
+        // Volume keys: when music is sent to a speaker, the window turns the speaker up or down too.
+        volumeControlStream = AudioManager.STREAM_MUSIC
+        val filter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(volumeKeys, filter, Context.RECEIVER_EXPORTED) else registerReceiver(volumeKeys, filter)
+    }
+
+    private val volumeKeys = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1) != AudioManager.STREAM_MUSIC) return
+            val am = getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
+            val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC).takeIf { it > 0 } ?: return
+            js(JSONObject().put("type", "sysvol").put("value", am.getStreamVolume(AudioManager.STREAM_MUSIC).toDouble() / max))
+        }
     }
 
     override fun onWebViewCreate(webView: WebView) {
@@ -54,6 +71,7 @@ class MainActivity : TauriActivity() {
 
     override fun onDestroy() {
         main.removeCallbacks(ticker)
+        runCatching { unregisterReceiver(volumeKeys) }
         controllerFuture?.let { MediaController.releaseFuture(it) }
         multicast?.takeIf { it.isHeld }?.release()
         super.onDestroy()

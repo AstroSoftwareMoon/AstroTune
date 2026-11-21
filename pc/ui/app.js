@@ -685,6 +685,7 @@ function sleepSheet() {
 }
 // ---------------------------------------------------------------- native player events (Android)
 window.__astroNative = (e) => {
+  if (e.type === "sysvol") { if (castDev) { api.invoke("cast_cmd", { cmd: "volume", value: e.value }); vol.value = Math.round(e.value * 100); paint(vol); } return; }
   if (castDev) return;
   if (e.type === "tick") { onTick({ pos: e.pos, paused: e.paused }); if (e.index !== qi && queue[e.index]) window.__astroNative({ type: "index", index: e.index }); }
   else if (e.type === "index" && queue[e.index] && e.index !== qi) { qi = e.index; cur = queue[qi]; pos = 0; paintNow(); tintFrom(cur); api.invoke("record", { track: cur }).catch(() => {}); pushRemote(); }

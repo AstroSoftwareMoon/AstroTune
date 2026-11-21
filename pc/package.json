@@ -1,7 +1,7 @@
 {
   "name": "astrotune",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "AstroTune build tooling (Tauri CLI only). The app itself has no JavaScript dependencies.",
   "scripts": { "tauri": "tauri" },
   "devDependencies": { "@tauri-apps/cli": "^2" }

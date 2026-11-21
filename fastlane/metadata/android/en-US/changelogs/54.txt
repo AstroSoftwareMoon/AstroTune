@@ -1,0 +1,1 @@
+AstroTune 1.8.0: hundreds more texts in Spanish, accent colour on the welcome screen, AstroTune icon in notifications. The Rust versions now copy this app screen by screen, open with the same animation and start songs instantly.

@@ -1,0 +1,38 @@
+name: Publish release (from finished builds)
+
+# Creates the release from artifacts of an already finished "Release AstroTune" run (and optionally
+# of an "Android Rust (beta)" run), without rebuilding anything.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, e.g. v1.6.0"
+        required: true
+      run_id:
+        description: "Run id of the finished Release AstroTune run"
+        required: true
+      rust_run_id:
+        description: "Optional run id of an Android Rust (beta) run"
+        required: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download builds
+        run: |
+          mkdir dl
+          gh run download "${{ github.event.inputs.run_id }}" -D dl-all
+          if [ -n "${{ github.event.inputs.rust_run_id }}" ]; then gh run download "${{ github.event.inputs.rust_run_id }}" -D dl-all; fi
+          find dl-all -type f -exec cp {} dl/ \;
+          cd dl && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Publish release
+        run: gh release create "$VERSION" dl/* --target "${GITHUB_SHA}" --title "AstroTune $VERSION" --notes-file .github/release-notes.md

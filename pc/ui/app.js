@@ -67,6 +67,7 @@ Object.assign(I18N.en, {
   next: "Continue", back: "Back", skip: "Skip", start: "Start",
 });
 let LANG = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+if (MOCK && /lang=es/.test(location.search)) LANG = "es"; // design previews only
 const t = (k, v) => { let s = I18N[LANG][k] ?? I18N.es[k] ?? k; if (v) for (const x in v) s = s.replace("{" + x + "}", v[x]); return s; };
 const ARTISTS = ["Bad Bunny", "Rosalía", "Dua Lipa", "The Weeknd", "Queen", "Daft Punk", "Taylor Swift", "Quevedo", "Aitana", "C. Tangana", "Estopa", "Coldplay", "Imagine Dragons", "Billie Eilish", "Feid", "Karol G", "Arctic Monkeys", "Linkin Park", "Rauw Alejandro", "Amaral", "Mecano", "Fito y Fitipaldis", "Ed Sheeran", "Metallica"];
 

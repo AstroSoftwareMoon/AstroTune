@@ -165,17 +165,49 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           cat > notes.md <<'NOTES'
-          **AstroTune: reproductor de música 100 % privado y anónimo.** Sin cuenta, sin ubicación, sin micrófono, sin estadísticas y sin rastreo: ningún dato tuyo sale de tu dispositivo.
+          <p align="center"><img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/banner.png?raw=true" alt="AstroTune" width="100%"></p>
+
+          # 🌙 AstroTune · privada y anónima
+
+          Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncios y sin telemetría**. Ningún dato tuyo sale de tu dispositivo. Biblioteca, historial y ajustes viven solo en tu móvil, tele u ordenador.
+
+          ## ⬇️ Descargas
 
           | Plataforma | Archivo |
           |---|---|
-          | Android (móvil, Android Auto, Chromecast/DLNA) | `*-android-universal.apk` (o el de tu arquitectura; `arm64-v8a` en casi todos) |
-          | Android TV / Google TV | `*-android-tv.apk` |
-          | Windows 10/11 | `*-windows-x64.exe` |
-          | Linux | `*-linux-x64.deb` / `.rpm` / `.AppImage` |
-          | macOS Apple Silicon (M1+) | `*-macos-apple-silicon.dmg` |
-          | macOS Intel | `*-macos-intel.dmg` |
+          | 📱 Android (Android Auto, Chromecast, DLNA) | `*-android-universal.apk` (o el de tu arquitectura; `arm64-v8a` en casi todos) |
+          | 📺 Android TV / Google TV | `*-android-tv.apk` |
+          | 🪟 Windows 10/11 | `*-windows-x64.exe` |
+          | 🐧 Linux | `*-linux-x64.deb` · `.rpm` · `.AppImage` |
+          | 🍎 macOS Apple Silicon (M1 o superior) | `*-macos-apple-silicon.dmg` |
+          | 🍎 macOS Intel | `*-macos-intel.dmg` |
 
-          Comprueba la descarga con `SHA256SUMS.txt`. Las builds no están firmadas con certificado de pago: Windows SmartScreen y macOS Gatekeeper pueden avisar; en macOS, clic derecho → Abrir. Código abierto (GPL-3.0), fork de OpenTune.
+          ## ✨ AstroTune para PC (Rust)
+
+          Interfaz de **cristal líquido**, pantalla de inicio animada y carátulas que se adaptan a cualquier resolución. Al abrirla por primera vez eliges **idioma (Español / English)**, ves qué garantiza la privacidad, eliges tus artistas y ajustas el nivel de privacidad.
+
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/1-bienvenida.png?raw=true" alt="Elegir idioma" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/2-seguridad.png?raw=true" alt="Seguridad" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/3-artistas.png?raw=true" alt="Artistas" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/4-privacidad-inicial.png?raw=true" alt="Privacidad" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/5-buscar.png?raw=true" alt="Buscar" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/6-reproductor.png?raw=true" alt="Reproductor" width="49%">
+          <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/screenshots/7-privacidad.png?raw=true" alt="Panel de privacidad" width="100%">
+
+          <sub>Capturas de la interfaz con datos de ejemplo.</sub>
+
+          ## 🔒 Privacidad y seguridad
+
+          - Sin cuenta, sin registro, sin identificador de instalación.
+          - La interfaz de PC está aislada (CSP estricta) y no puede acceder a internet; solo el núcleo pide la música.
+          - Modo sin conexión, modo invitado y borrado automático del historial.
+          - Panel que muestra a qué servidores se conecta la app (la lista no sale de tu equipo).
+          - Código abierto (GPL-3.0), sin programas de terceros dentro y con `SHA256SUMS.txt` para comprobar cada descarga.
+
+          ## ⚠️ Importante
+
+          Las builds no llevan certificado de pago: **Windows SmartScreen** y **macOS Gatekeeper** pueden avisar (en macOS: clic derecho → Abrir). El APK de Android está firmado con clave de depuración. Alexa no admite emisión directa: úsala como altavoz Bluetooth.
+
+          Fork de OpenTune.
           NOTES
           gh release create "$VERSION" dl/* --target "${GITHUB_SHA}" --title "AstroTune $VERSION" --notes-file notes.md

@@ -47,6 +47,18 @@ AstroTune es privado y anónimo por diseño.
 
 Cada push compila el APK de Android y comprueba la app de PC en GitHub Actions. El workflow **Release AstroTune** genera, en un único lanzamiento y como descargas separadas: Android (móvil), Android TV / Google TV, Windows, Linux y macOS (Apple Silicon e Intel), con `SHA256SUMS.txt`.
 
+## Capturas
+
+<img src="docs/screenshots/1-bienvenida.png" width="48%">
+<img src="docs/screenshots/2-seguridad.png" width="48%">
+<img src="docs/screenshots/3-artistas.png" width="48%">
+<img src="docs/screenshots/4-privacidad-inicial.png" width="48%">
+<img src="docs/screenshots/5-buscar.png" width="48%">
+<img src="docs/screenshots/6-reproductor.png" width="48%">
+<img src="docs/screenshots/7-privacidad.png" width="48%">
+
+<sub>Interfaz de PC con datos de ejemplo.</sub>
+
 ### AstroTune para PC (Rust)
 La versión de PC está en `pc/`: Tauri v2 + Rust, con interfaz de cristal líquido, pantalla de inicio animada y carátulas que se adaptan a cualquier resolución. Sin cuenta, sin telemetría, sin ubicación; la interfaz no tiene acceso a internet (CSP estricta) y solo el núcleo Rust consulta YouTube Music. Biblioteca, historial y ajustes se guardan únicamente en tu PC.
 

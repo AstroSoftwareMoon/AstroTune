@@ -47,18 +47,6 @@ AstroTune es privado y anónimo por diseño.
 
 Cada push compila el APK de Android y comprueba la app de PC en GitHub Actions. El workflow **Release AstroTune** genera, en un único lanzamiento y como descargas separadas: Android (móvil), Android TV / Google TV, Windows, Linux y macOS (Apple Silicon e Intel), con `SHA256SUMS.txt`.
 
-## Capturas
-
-<img src="docs/screenshots/1-bienvenida.png" width="48%">
-<img src="docs/screenshots/2-seguridad.png" width="48%">
-<img src="docs/screenshots/3-artistas.png" width="48%">
-<img src="docs/screenshots/4-privacidad-inicial.png" width="48%">
-<img src="docs/screenshots/5-buscar.png" width="48%">
-<img src="docs/screenshots/6-reproductor.png" width="48%">
-<img src="docs/screenshots/7-privacidad.png" width="48%">
-
-<sub>Interfaz de PC con datos de ejemplo.</sub>
-
 ### AstroTune para PC (Windows, macOS y Linux)
 La versión de PC está en `desktop/`: Kotlin + Compose, compilando el mismo código que la app de Android (cliente de YouTube Music, parser, letras, ajustes y la misma forma de conseguir el audio). Misma apariencia, mismo cristal y mismas opciones. Sin cuenta, sin telemetría, sin ubicación; biblioteca, historial y ajustes se guardan solo en tu PC.
 

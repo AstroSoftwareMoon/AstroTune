@@ -82,7 +82,7 @@ jobs:
             glob: "pc/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg"
             suffix: macos-apple-silicon
           - name: macOS (Intel)
-            os: macos-13
+            os: macos-latest
             bundles: dmg
             target: x86_64-apple-darwin
             glob: "pc/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg"

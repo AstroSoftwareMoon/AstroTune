@@ -247,6 +247,7 @@ internal fun rememberArtworkSeed(url: String?): Color? {
  * The computer's own interface font. Skia doesn't map the generic "sans-serif" on
  * Windows, which drew every word in Times New Roman there; Segoe UI is named instead.
  */
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 private val SystemSans: FontFamily by lazy {
     if (System.getProperty("os.name").orEmpty().startsWith("Windows", ignoreCase = true)) {
         FontFamily(

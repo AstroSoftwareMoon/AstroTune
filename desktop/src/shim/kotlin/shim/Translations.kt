@@ -4,6 +4,8 @@
 // speaks a language there's no file for. See Downloads.kt for why this file sits here.
 package com.opentune.i18n
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive

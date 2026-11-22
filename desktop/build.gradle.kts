@@ -144,6 +144,8 @@ sourceSets {
             include(sharedFromCore.filter { it.endsWith(".kt") || it.endsWith("**") })
             include(sharedFromApp)
         }
+        // The phone's translations, the same files, so the computer speaks the same words.
+        resources.srcDir(rootProject.file("core/src/main/assets"))
         java {
             srcDir(coreSources)
             srcDir("src/shim/java")
@@ -284,6 +286,12 @@ compose.desktop {
             }
             windows {
                 iconFile.set(project.file("packaging/icons/AppIcon.ico"))
+                // Installed for this user, in their own folder: no administrator prompt, which
+                // Windows shows for the installer's temporary .msi under a random name.
+                perUserInstall = true
+                dirChooser = true
+                shortcut = true
+                menu = true
                 menuGroup = "AstroTune"
                 upgradeUuid = "b3d8a1f4-7c52-4e19-9a06-5d2e8c7f1a93"
             }

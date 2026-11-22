@@ -162,7 +162,7 @@ private fun rememberType(settings: com.opentune.data.settings.ThemeSettings): Ty
         AppFont.OUTFIT -> Outfit
         AppFont.SERIF -> FontFamily.Serif
         AppFont.MONO -> FontFamily.Monospace
-        else -> FontFamily.SansSerif
+        else -> SystemSans
     }
     return remember(family, settings.textWeight) { readableType(family, settings.textWeight.minimum) }
 }
@@ -241,6 +241,28 @@ internal fun rememberArtworkSeed(url: String?): Color? {
         seed = argb?.let(::Color)
     }
     return seed
+}
+
+/**
+ * The computer's own interface font. Skia doesn't map the generic "sans-serif" on
+ * Windows, which drew every word in Times New Roman there; Segoe UI is named instead.
+ */
+private val SystemSans: FontFamily by lazy {
+    if (System.getProperty("os.name").orEmpty().startsWith("Windows", ignoreCase = true)) {
+        FontFamily(
+            listOf(FontWeight.Light, FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.ExtraBold).map { w ->
+                androidx.compose.ui.text.platform.SystemFont(
+                    when {
+                        w.weight >= 700 -> "Segoe UI Bold"
+                        w.weight >= 600 -> "Segoe UI Semibold"
+                        w.weight <= 300 -> "Segoe UI Light"
+                        else -> "Segoe UI"
+                    },
+                    w,
+                )
+            },
+        )
+    } else FontFamily.SansSerif
 }
 
 private val outfitData: ByteArray by lazy {

@@ -35,9 +35,12 @@ val LocalHazeState = staticCompositionLocalOf<HazeState?> { null }
  */
 val LocalBackdrop = staticCompositionLocalOf<Any?> { null }
 
-/** Liquid Glass needs Android's runtime shaders. */
+/** Liquid Glass: on as on the phone, unless blur is reduced. */
 @Composable
-fun liquidGlassOn(): Boolean = false
+fun liquidGlassOn(): Boolean {
+    val ui by AppSettings.ui.collectAsState()
+    return (ui.liquidGlass || ui.glassStyle == GlassStyle.LIQUID) && !ui.reduceBlur
+}
 
 /**
  * The phone's frosted glass: what's behind, blurred through Haze and washed
@@ -52,6 +55,13 @@ fun Modifier.glass(shape: Shape, tint: Color = MaterialTheme.colorScheme.surface
     val dark = MaterialTheme.colorScheme.surface.luminance() <= 0.5f
     val look = glassLook(ui.glassStyle)
     val colour = if (tint.alpha < 1f) tint else styleTint(ui.glassStyle, tint, MaterialTheme.colorScheme.primary, dark)
+    // Liquid Glass, the phone's default, wherever the window records the page under the glass.
+    val liquid = LocalLiquidBackdrop.current
+    if (liquid != null && !ui.reduceBlur && (ui.liquidGlass || ui.glassStyle == GlassStyle.LIQUID)) {
+        val film = if (tint.alpha < 1f) tint.copy(alpha = minOf(tint.alpha, 0.35f))
+            else if (dark) Color.White.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.2f)
+        return this.liquidGlass(liquid, shape, film, dark)
+    }
     val base = this.clip(shape)
     val filled = if (haze == null || ui.reduceBlur) {
         base.background(if (tint.alpha < 1f) tint else colour.copy(alpha = 0.96f))

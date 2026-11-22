@@ -39,7 +39,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -353,6 +352,8 @@ private fun AppearanceSection() {
     val theme by AppSettings.theme.collectAsState()
     val ui by AppSettings.ui.collectAsState()
     Section("Look") {
+        var lang by remember { mutableStateOf(com.opentune.i18n.Tr.chosen) }
+        Choices("Language", LANGUAGES.map { it.first }, lang, { tag -> LANGUAGES.first { it.first == tag }.second }) { v -> lang = v; com.opentune.i18n.Tr.choose(v) }
         Choices("Theme", com.opentune.data.settings.ThemeMode.entries, theme.mode, { it.label }) { v -> AppSettings.updateTheme { it.copy(mode = v) } }
         Text("Accent", style = MaterialTheme.typography.bodyLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -368,7 +369,7 @@ private fun AppearanceSection() {
         Choices("Font", com.opentune.data.settings.AppFont.entries.filter { it != com.opentune.data.settings.AppFont.CUSTOM }, theme.font, { it.label }) { v -> AppSettings.updateTheme { it.copy(font = v) } }
         Choices("Text weight", com.opentune.data.settings.TextWeight.entries, theme.textWeight, { it.label }) { v -> AppSettings.updateTheme { it.copy(textWeight = v) } }
         SwitchRow("Blur effects", "Frosted glass on the player, the bars and the search box, blurring what scrolls under them", !ui.reduceBlur) { on -> AppSettings.updateUi { it.copy(reduceBlur = !on) } }
-        if (!ui.reduceBlur) Choices("Glass", com.opentune.data.settings.GlassStyle.entries.filter { it != com.opentune.data.settings.GlassStyle.LIQUID }, ui.glassStyle, { it.label }) { v -> AppSettings.updateUi { it.copy(glassStyle = v) } }
+        if (!ui.reduceBlur) Choices("Glass", com.opentune.data.settings.GlassStyle.entries, ui.glassStyle, { it.label }) { v -> AppSettings.updateUi { it.copy(glassStyle = v) } }
         SwitchRow("Smooth motion", "Pages glide in, covers lift under the pointer, rows rise into place", !ui.reduceAnimation) { on -> AppSettings.updateUi { it.copy(reduceAnimation = !on) } }
         SwitchRow("Colour from the song", "A soft wash of the playing cover's colour behind the pages", theme.colorFromArtwork) { on -> AppSettings.updateTheme { it.copy(colorFromArtwork = on) } }
         SwitchRow("Artist signatures (beta)", "An artist's handwritten signature over their photo, in place of their name, when there's one", ui.artistSignatures) { on ->
@@ -518,3 +519,10 @@ private fun ConnectedSection() {
         }
     }
 }
+
+
+/** The languages offered, each by its own name; "" follows the computer. */
+private val LANGUAGES = listOf(
+    "" to "Automatic", "es" to "Español", "en" to "English", "fr" to "Français",
+    "de" to "Deutsch", "it" to "Italiano", "pt" to "Português",
+)

@@ -54,7 +54,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -104,7 +103,7 @@ internal val SIDEBAR_WIDTH = 248.dp
 internal val SIDEBAR_FOLDED = 72.dp
 internal val PANEL_WIDTH = 320.dp
 /** How tall the player bar across the top of the page is, under the window's own title bar. */
-internal val TOP_BAR_HEIGHT = 64.dp
+internal val TOP_BAR_HEIGHT = 70.dp
 /** How much of the sidebar's and side column's own colour covers the window's backdrop: less over Windows' material. */
 @Composable
 private fun chromeAlpha(): Float {
@@ -263,16 +262,12 @@ internal fun TopBar(
     val has = song != null
     val frost = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
     androidx.compose.foundation.layout.BoxWithConstraints(modifier.fillMaxWidth().height(TOP_BAR_HEIGHT + DesktopWindow.topInset)) {
-        // Frosted over the page sliding under it; solid with blur turned off. Drawn a hair past the
-        // bar's top and sides, so the glass's hairline shows only along its foot, where the page meets it.
+        // A floating capsule of Liquid Glass over the page sliding under it, as the phone's dock
+        // (frosted with Liquid Glass off; solid with blur turned off).
         Box(
-            Modifier.matchParentSize().layout { measurable, constraints ->
-                val over = 1.dp.roundToPx()
-                val glass = measurable.measure(
-                    constraints.copy(minWidth = constraints.maxWidth + 2 * over, maxWidth = constraints.maxWidth + 2 * over, minHeight = constraints.maxHeight + over, maxHeight = constraints.maxHeight + over),
-                )
-                layout(constraints.maxWidth, constraints.maxHeight) { glass.place(-over, -over) }
-            }.glass(RectangleShape, frost),
+            Modifier.matchParentSize()
+                .padding(start = 8.dp, end = 8.dp, top = DesktopWindow.topInset + 6.dp, bottom = 4.dp)
+                .glass(RoundedCornerShape(26.dp), frost),
         )
         // The song keeps its room as the bar narrows (a column open beside the page, a small
         // window): first the volume folds to its speaker, then shuffle and repeat step aside.
@@ -281,7 +276,7 @@ internal fun TopBar(
         // Its empty parts move the window, where the app draws the title bar.
         Box(Modifier.matchParentSize().windowDrag())
         Box(Modifier.fillMaxSize().padding(top = DesktopWindow.topInset)) {
-        Row(Modifier.fillMaxSize().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxSize().padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             HoverIcon(Icons.AutoMirrored.Rounded.ArrowBack, "Back", enabled = canGoBack, size = 34.dp, iconSize = 20.dp, onClick = onBack)
             Spacer(Modifier.width(8.dp))
             if (full) HoverIcon(Icons.Rounded.Shuffle, if (shuffled) "Shuffle on" else "Shuffle", enabled = has, lit = shuffled, size = 32.dp, iconSize = 18.dp, onClick = Player::toggleShuffle)

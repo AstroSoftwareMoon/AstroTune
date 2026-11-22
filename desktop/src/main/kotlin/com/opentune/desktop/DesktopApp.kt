@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateListOf
 import dev.chrisbanes.haze.hazeSource
+import com.opentune.ui.components.liquidSource
 import dev.chrisbanes.haze.rememberHazeState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
@@ -95,7 +96,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -227,6 +227,8 @@ fun DesktopApp(startPanel: SidePanel? = null) {
                 val panelShown = panel != null && song != null && roomForPanel
                 val folded = maxWidth < 900.dp
                 val haze = rememberHazeState()
+                // The page, recorded for the Liquid Glass over it to bend, as on the phone.
+                val liquid = com.opentune.ui.components.rememberLiquidBackdrop()
                 // Behind the whole window, so the see-through sidebar and side column take its colour
                 // as well as the page; a source for the top bar's blur under the page's own.
                 Box(Modifier.fillMaxSize().hazeSource(haze, zIndex = 0f)) { WindowBackdrop(song?.thumbnailUrl, clear) }
@@ -244,8 +246,9 @@ fun DesktopApp(startPanel: SidePanel? = null) {
                             LocalPageTop provides TOP_BAR_HEIGHT + DesktopWindow.topInset,
                             LocalPageBottom provides 40.dp,
                             com.opentune.ui.components.LocalHazeState provides haze.takeIf { !ui.reduceBlur },
+                            com.opentune.ui.components.LocalLiquidBackdrop provides liquid.takeIf { !ui.reduceBlur },
                         ) {
-                            Box(Modifier.fillMaxSize().hazeSource(haze, zIndex = 1f)) {
+                            Box(Modifier.fillMaxSize().hazeSource(haze, zIndex = 1f).then(if (ui.reduceBlur) Modifier else Modifier.liquidSource(liquid))) {
                                 Pages(
                                     page = page,
                                     still = ui.reduceAnimation,

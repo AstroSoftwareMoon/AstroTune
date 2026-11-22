@@ -6,4 +6,4 @@ package com.opentune.ui.theme
 import androidx.compose.runtime.Composable
 
 @Composable
-fun tr(text: String): String = text
+fun tr(text: String): String = com.opentune.i18n.Tr.t(text)

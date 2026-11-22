@@ -1,0 +1,1 @@
+AstroTune 2.0.2: PC in Spanish, Liquid Glass on PC, Segoe UI on Windows, installer without admin prompt.

@@ -4,6 +4,14 @@
 
 Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncios y sin telemetría**. Biblioteca, historial y ajustes viven solo en tu móvil, tele u ordenador.
 
+<p align="center">
+  <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/media/opening.gif?raw=true" width="190">
+  <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/media/phone-tour.gif?raw=true" width="190">
+  <img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/media/player-motion.gif?raw=true" width="190">
+</p>
+
+<p align="center"><img src="https://github.com/AstroSoftwareMoon/AstroTune/blob/main/docs/media/pc-tour.gif?raw=true" width="100%"></p>
+
 ## ⬇️ Descargas
 
 | Plataforma | Archivo |
@@ -14,6 +22,13 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 | 🐧 Linux | `*-linux-amd64.deb` · `*-linux-x86_64.rpm` · `-portable.tar.gz` |
 | 🍎 macOS Apple Silicon (M1 o superior) | `*-macos-apple-silicon.dmg` |
 | 🍎 macOS Intel | `*-macos-intel.dmg` |
+
+## 🛠️ 2.0.2
+
+- **PC en español** por defecto (sigue el idioma del ordenador) y con selector de idioma en Ajustes → Apariencia.
+- **Liquid Glass en PC**: la barra del reproductor es una cápsula flotante de cristal líquido que dobla lo que pasa por debajo, como en el móvil.
+- **Windows**: arreglada la letra rara (salía Times New Roman); ahora usa Segoe UI.
+- **Instalador de Windows sin permiso de administrador**: se instala solo para tu usuario, sin el aviso de un .msi con nombre raro.
 
 ## 🛠️ 2.0.1
 

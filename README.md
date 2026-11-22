@@ -10,6 +10,33 @@ Reproductor de música para Android de la familia **Astro**, con el logo de la l
 
 AstroTune es un fork de [OpenTune](https://github.com/justshivv/Opentune) de justshivv, distribuido bajo **GPL-3.0** (ver `LICENSE` y `THIRD_PARTY_NOTICES.md`). El README original se conserva en [`docs/UPSTREAM_README.md`](docs/UPSTREAM_README.md).
 
+## En imágenes
+
+<p align="center">
+  <img src="docs/media/opening.gif" alt="Animación de apertura" width="200">
+  <img src="docs/media/phone-tour.gif" alt="Recorrido por la app del móvil" width="200">
+  <img src="docs/media/player-motion.gif" alt="El reproductor abriéndose desde la cápsula" width="200">
+</p>
+
+<p align="center">
+  <img src="docs/media/phone-explore.jpg" alt="Explorar" width="160">
+  <img src="docs/media/phone-library.jpg" alt="Biblioteca" width="160">
+  <img src="docs/media/phone-player.jpg" alt="Reproductor" width="160">
+  <img src="docs/media/phone-player-color.jpg" alt="Reproductor con el color de la carátula" width="160">
+  <img src="docs/media/phone-settings.jpg" alt="Ajustes" width="160">
+</p>
+
+### En el PC
+
+<p align="center"><img src="docs/media/pc-tour.gif" alt="Recorrido por AstroTune para PC" width="100%"></p>
+
+<p align="center">
+  <img src="docs/media/pc-home.jpg" alt="Inicio en PC con la barra de cristal líquido" width="49%">
+  <img src="docs/media/pc-player.jpg" alt="Reproductor en PC" width="49%">
+  <img src="docs/media/pc-lyrics.jpg" alt="Letras sincronizadas en PC" width="49%">
+  <img src="docs/media/pc-artist.jpg" alt="Página de artista en PC" width="49%">
+</p>
+
 ## Cambios respecto a OpenTune
 
 - Versión de escritorio (Windows, macOS, Linux) con la misma marca.

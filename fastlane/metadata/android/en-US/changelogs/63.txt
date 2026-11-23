@@ -1,0 +1,1 @@
+AstroTune 2.0.3: PC no longer crashes while scrolling; no stray Windows caption buttons.

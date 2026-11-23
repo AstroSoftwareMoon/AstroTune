@@ -101,7 +101,9 @@ internal object WindowsFrame {
             previous = old
             hwnd = h
             val style = u.GetWindowLongPtrW(h, GWL_STYLE)
-            u.SetWindowLongPtrW(h, GWL_STYLE, (style and WS_POPUP.inv()) or WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or WS_MAXIMIZEBOX)
+            u.SetWindowLongPtrW(h, GWL_STYLE, ((style and WS_POPUP.inv()) or WS_CAPTION or WS_THICKFRAME or WS_MINIMIZEBOX or WS_MAXIMIZEBOX) and WS_SYSMENU.inv())
+            // No WS_SYSMENU: with it DWM draws its own close, maximise and minimise buttons in the
+            // material at the top right, under the app's glass, where they can't be clicked.
             // Windows 11's rounded corners, and a frame a pixel deep so DWM keeps the shadow.
             d?.DwmSetWindowAttribute(h, DWMWA_WINDOW_CORNER_PREFERENCE, intArrayOf(DWMWCP_ROUND), 4)
             d?.DwmExtendFrameIntoClientArea(h, intArrayOf(1, 1, 1, 1))

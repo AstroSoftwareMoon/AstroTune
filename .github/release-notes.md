@@ -23,6 +23,11 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 | 🍎 macOS Apple Silicon (M1 o superior) | `*-macos-apple-silicon.dmg` |
 | 🍎 macOS Intel | `*-macos-intel.dmg` |
 
+## 🛠️ 2.0.3
+
+- **PC ya no se cierra al bajar** por las páginas (el cristal líquido se dibujaba dentro de sí mismo).
+- **Windows**: fuera los botones de cerrar, maximizar y minimizar de Windows que asomaban a la derecha sin poder pulsarse; se usan los de la app, arriba a la izquierda.
+
 ## 🛠️ 2.0.2
 
 - **PC en español** por defecto (sigue el idioma del ordenador) y con selector de idioma en Ajustes → Apariencia.

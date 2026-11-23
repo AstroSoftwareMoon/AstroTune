@@ -246,9 +246,11 @@ fun DesktopApp(startPanel: SidePanel? = null) {
                             LocalPageTop provides TOP_BAR_HEIGHT + DesktopWindow.topInset,
                             LocalPageBottom provides 40.dp,
                             com.opentune.ui.components.LocalHazeState provides haze.takeIf { !ui.reduceBlur },
-                            com.opentune.ui.components.LocalLiquidBackdrop provides liquid.takeIf { !ui.reduceBlur },
                         ) {
                             Box(Modifier.fillMaxSize().hazeSource(haze, zIndex = 1f).then(if (ui.reduceBlur) Modifier else Modifier.liquidSource(liquid))) {
+                                // Glass inside the page can't bend the page it's part of (it would draw itself
+                                // into itself, which crashed while scrolling): there it's frosted instead.
+                                CompositionLocalProvider(com.opentune.ui.components.LocalLiquidBackdrop provides null) {
                                 Pages(
                                     page = page,
                                     still = ui.reduceAnimation,
@@ -264,15 +266,19 @@ fun DesktopApp(startPanel: SidePanel? = null) {
                                     onPlaylist = { go(Page(Tab.LIBRARY, Shelf.PLAYLISTS, PlaylistKey(it))) },
                                     onBack = { back() },
                                 )
+                                }
                             }
-                            TopBar(
-                                song, canGoBack = history.isNotEmpty(), onBack = back,
-                                panel = panel.takeIf { panelShown },
-                                onPanel = { p -> panel = if (panel == p && panelShown) null else p },
-                                onOpenPlayer = { playerOpen = true },
-                                modifier = Modifier.align(Alignment.TopCenter),
-                                panelRoom = roomForPanel,
-                            )
+                            // Only the bar floating over the page is Liquid Glass: it's what it can bend.
+                            CompositionLocalProvider(com.opentune.ui.components.LocalLiquidBackdrop provides liquid.takeIf { !ui.reduceBlur }) {
+                                TopBar(
+                                    song, canGoBack = history.isNotEmpty(), onBack = back,
+                                    panel = panel.takeIf { panelShown },
+                                    onPanel = { p -> panel = if (panel == p && panelShown) null else p },
+                                    onOpenPlayer = { playerOpen = true },
+                                    modifier = Modifier.align(Alignment.TopCenter),
+                                    panelRoom = roomForPanel,
+                                )
+                            }
                         }
                     }
                     val shown = rememberLast(panel)

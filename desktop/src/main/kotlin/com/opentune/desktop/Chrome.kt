@@ -275,6 +275,8 @@ internal fun TopBar(
         val full = maxWidth >= 700.dp
         // Its empty parts move the window, where the app draws the title bar.
         Box(Modifier.matchParentSize().windowDrag())
+        // The bar's own controls and menus are frosted, not bent: only the capsule samples the page.
+        androidx.compose.runtime.CompositionLocalProvider(com.opentune.ui.components.LocalLiquidBackdrop provides null) {
         Box(Modifier.fillMaxSize().padding(top = DesktopWindow.topInset)) {
         Row(Modifier.fillMaxSize().padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             HoverIcon(Icons.AutoMirrored.Rounded.ArrowBack, "Back", enabled = canGoBack, size = 34.dp, iconSize = 20.dp, onClick = onBack)
@@ -307,6 +309,7 @@ internal fun TopBar(
                 HoverIcon(Icons.AutoMirrored.Rounded.QueueMusic, "Up next", enabled = has, lit = panel == SidePanel.QUEUE, size = 32.dp, iconSize = 19.dp) { onPanel(SidePanel.QUEUE) }
                 HoverIcon(if (panel == SidePanel.NOW) Icons.Rounded.Info else Icons.Outlined.Info, "Now playing", enabled = has, lit = panel == SidePanel.NOW, size = 32.dp, iconSize = 18.dp) { onPanel(SidePanel.NOW) }
             }
+        }
         }
         }
     }

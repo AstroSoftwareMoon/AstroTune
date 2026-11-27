@@ -156,7 +156,7 @@ object UpdateCheck {
     internal fun fromPage(finalUrl: String, abis: List<String>): Release? {
         val version = TAG_IN_URL.find(finalUrl.substringBefore('?'))?.groupValues?.get(1) ?: return null
         val abi = abis.firstOrNull { it in BUILT_FOR } ?: "universal"
-        val name = "OpenTune-v$version-$abi.apk"
+        val name = "AstroTune-v$version-android-$abi.apk"
         return Release(
             version = version,
             page = "$RELEASES_PAGE/tag/v$version",
@@ -190,6 +190,10 @@ object UpdateCheck {
         _pending.value = release
         // A version the user said "not now" to isn't offered again until the next one.
         if (prefs.getString("skipped", null) == release.version) return null
+        // Each new version is announced once (a notification or the in-app notice, whichever
+        // comes first); after that it waits in Settings → About → Updates.
+        if (prefs.getString("announced", null) == release.version) return null
+        prefs.edit { putString("announced", release.version) }
         return release
     }
 

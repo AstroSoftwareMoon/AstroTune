@@ -1,0 +1,1 @@
+AstroTune 2.0.5: signed with a fixed key, so later versions install over this one; each new version is announced once.

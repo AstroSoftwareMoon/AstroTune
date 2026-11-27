@@ -199,6 +199,12 @@ object Cast {
         media(CastServer.publish(CastServer.Source.Web(type) { fresh -> youtube(id, fresh).first.let { it to StreamResolver.mediaHeadersFor(it) } }, host), type)
     }
 
+    /** Drops the link kept for [id], so the next load asks YouTube again. */
+    fun forget(id: String) {
+        streams.remove(id)
+        StreamResolver.forget(id)
+    }
+
     /** Looks up [item]'s stream ahead of time, when it's a YouTube song, so casting it starts at once. */
     suspend fun warm(item: MediaItem) = withContext(Dispatchers.IO) {
         val id = item.mediaId
@@ -210,6 +216,8 @@ object Cast {
     /** A YouTube song's stream address and type, preferring AAC; held until it stops working. */
     private suspend fun youtube(id: String, fresh: Boolean): Pair<String, String> {
         if (!fresh) streams[id]?.let { return it }
+        // A fresh link means the last one stopped working: the resolver mustn't hand it back.
+        if (fresh) StreamResolver.forget(id)
         // AAC in MP4 plays on every receiver; WebM/Opus doesn't on many amplifiers (a Denon among
         // them), so AAC is asked for twice before settling for WebM.
         val found = runCatching { StreamResolver.resolveForDownload(id, maxKbps = 320, requireM4a = true).url to "audio/mp4" }

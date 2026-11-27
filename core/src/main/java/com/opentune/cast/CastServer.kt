@@ -39,7 +39,10 @@ object CastServer {
          * A stream on the web. [open] gives its address and headers; it's
          * asked again with `fresh = true` if the address stops working.
          */
-        class Web(override val contentType: String, val open: suspend (fresh: Boolean) -> Pair<String, Map<String, String>>) : Source
+        class Web(override val contentType: String, val open: suspend (fresh: Boolean) -> Pair<String, Map<String, String>>) : Source {
+            /** The stream's size once known, so each of the device's requests doesn't ask again. */
+            @Volatile var length: Long = -1L
+        }
     }
 
     private var server: ServerSocket? = null
@@ -140,36 +143,87 @@ object CastServer {
         }
     }
 
+    /**
+     * A web stream, passed through in pieces. The device asks for the whole song (or the rest of
+     * it) at once; googlevideo serves a doubted session small ranges and cuts big ones off part way,
+     * which left the device stalled mid-song until it gave up and the song was skipped. So the
+     * phone answers the device's range itself and fetches it 1 MB at a time, and a piece that fails
+     * is fetched again, from a fresh address after a refusal, carrying on from the same byte.
+     */
     private fun sendWeb(out: OutputStream, source: Source.Web, range: String?, head: Boolean) {
         var fresh = false
-        repeat(2) {
-            val (url, extra) = runBlocking { source.open(fresh) }
-            val request = Request.Builder().url(url).apply {
-                extra.forEach { (k, v) -> header(k, v) }
-                if (range != null) header("Range", range)
-                if (head) head()
-            }.build()
-            Http.client.newCall(request).execute().use { response ->
-                // An address that's run out gets one fresh try.
-                if (response.code == 403 || response.code == 410) {
-                    fresh = true
-                    return@repeat
+        var address = runCatching { runBlocking { source.open(false) } }.getOrNull()
+        val length = source.length.takeIf { it > 0 } ?: run {
+            var found = -1L
+            for (attempt in 0 until 3) {
+                val (url, extra) = address ?: break
+                found = runCatching { lengthOf(url, extra) }.getOrDefault(-1L)
+                if (found > 0) break
+                address = runCatching { runBlocking { source.open(true) } }.getOrNull()
+            }
+            found.also { if (it > 0) source.length = it }
+        }
+        if (address == null || length <= 0) {
+            respond(out, "502 Bad Gateway", mapOf("Content-Length" to "0"))
+            return
+        }
+        val span = Ranges.parse(range, length)
+        val (start, end) = span ?: (0L to length - 1)
+        val headers = linkedMapOf("Content-Type" to source.contentType, "Accept-Ranges" to "bytes") + DLNA_HEADERS
+        if (span == null) respond(out, "200 OK", headers + mapOf("Content-Length" to "$length"))
+        else respond(out, "206 Partial Content", headers + mapOf("Content-Length" to "${end - start + 1}", "Content-Range" to "bytes $start-$end/$length"))
+        if (head) return
+        var at = start
+        var failures = 0
+        val buffer = ByteArray(64 * 1024)
+        while (at <= end) {
+            val (url, extra) = address ?: return
+            val to = minOf(end, at + PIECE - 1)
+            val before = at
+            val ok = runCatching {
+                val request = Request.Builder().url(url).apply {
+                    extra.forEach { (k, v) -> header(k, v) }
+                    header("Range", "bytes=$at-$to")
+                }.build()
+                Http.client.newCall(request).execute().use { response ->
+                    if (response.code == 403 || response.code == 410) fresh = true
+                    if (!response.isSuccessful) return@use false
+                    val input = response.body?.byteStream() ?: return@use false
+                    while (at <= to) {
+                        val n = input.read(buffer, 0, minOf(buffer.size.toLong(), to - at + 1).toInt())
+                        if (n < 0) break
+                        // The device closing its connection (a seek, the next song) ends this, which is fine.
+                        try { out.write(buffer, 0, n) } catch (_: java.io.IOException) { return }
+                        at += n
+                    }
+                    true
                 }
-                val status = when (response.code) {
-                    206 -> "206 Partial Content"
-                    in 200..299 -> "200 OK"
-                    416 -> "416 Range Not Satisfiable"
-                    else -> "502 Bad Gateway"
-                }
-                val headers = linkedMapOf("Content-Type" to source.contentType, "Accept-Ranges" to "bytes") + DLNA_HEADERS
-                val passed = listOf("Content-Length", "Content-Range").mapNotNull { k -> response.header(k)?.let { k to it } }
-                respond(out, status, headers + passed)
-                if (!head) response.body?.byteStream()?.use { it.copyTo(out) }
-                return
+            }.getOrDefault(false) && at > before
+            if (ok) { failures = 0; continue }
+            if (++failures > 5) return
+            Thread.sleep(300L * failures)
+            if (fresh || failures >= 2) {
+                address = runCatching { runBlocking { source.open(true) } }.getOrNull() ?: address
+                fresh = false
             }
         }
-        respond(out, "502 Bad Gateway", mapOf("Content-Length" to "0"))
+        runCatching { out.flush() }
     }
+
+    /** The full size of the stream at [url], from a one-byte range's Content-Range. */
+    private fun lengthOf(url: String, extra: Map<String, String>): Long {
+        val request = Request.Builder().url(url).apply {
+            extra.forEach { (k, v) -> header(k, v) }
+            header("Range", "bytes=0-0")
+        }.build()
+        Http.client.newCall(request).execute().use { r ->
+            if (!r.isSuccessful) return -1L
+            r.header("Content-Range")?.substringAfterLast('/')?.toLongOrNull()?.let { return it }
+            return if (r.code == 200) r.header("Content-Length")?.toLongOrNull() ?: -1L else -1L
+        }
+    }
+
+    private const val PIECE = 1024L * 1024L
 
     private fun respond(out: OutputStream, status: String, headers: Map<String, String>) {
         val text = buildString {

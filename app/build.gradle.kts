@@ -14,8 +14,8 @@ android {
         applicationId = "com.astrotune"
         minSdk = 26
         targetSdk = 36
-        versionCode = 63
-        versionName = "2.0.3"
+        versionCode = 64
+        versionName = "2.0.4"
         // This version's store changelog, shown as What's new when a release
         // goes out before the app's own notes for it are written.
         val changelog = rootProject.file("fastlane/metadata/android/en-US/changelogs/$versionCode.txt")

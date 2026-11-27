@@ -23,6 +23,10 @@ Reproductor de música **sin cuenta, sin ubicación, sin micrófono, sin anuncio
 | 🍎 macOS Apple Silicon (M1 o superior) | `*-macos-apple-silicon.dmg` |
 | 🍎 macOS Intel | `*-macos-intel.dmg` |
 
+## 🛠️ 2.0.4
+
+- **Google Home / Chromecast / DLNA ya no salta canciones a mitad**: el móvil pasa el audio al altavoz a trozos de 1 MB y, si YouTube corta, sigue desde el mismo punto con un enlace nuevo. Si aun así el altavoz se atasca, la canción se vuelve a cargar donde iba (hasta 3 veces) antes de pasar a la siguiente.
+
 ## 🛠️ 2.0.3
 
 - **PC ya no se cierra al bajar** por las páginas (el cristal líquido se dibujaba dentro de sí mismo).

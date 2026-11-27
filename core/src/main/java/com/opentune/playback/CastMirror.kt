@@ -35,6 +35,9 @@ class CastMirror(private val context: Context, private val player: Player, priva
     /** When a command last went to the device; its reports lag behind for a moment after. */
     private var commandAt = 0L
     private var stuckJob: Job? = null
+    /** How many times the playing song has been reloaded on the device after it stalled or failed. */
+    private var retries = 0
+    private var retriesFor: String? = null
 
     val active: Boolean get() = receiver != null
 
@@ -72,6 +75,21 @@ class CastMirror(private val context: Context, private val player: Player, priva
         }
         if (waiting) player.play()
         waiting = false
+    }
+
+    /**
+     * A song the device stalled on or dropped is loaded again where it was, from a fresh link,
+     * a couple of times before it's given up on; true when that was done.
+     */
+    private fun reloadHere(): Boolean {
+        val item = player.currentMediaItem ?: return false
+        if (retriesFor != item.mediaId) { retriesFor = item.mediaId; retries = 0 }
+        if (retries >= MAX_RETRIES) return false
+        retries++
+        Cast.forget(item.mediaId)
+        val at = receiver?.status?.value?.takeIf { it.mediaId == item.mediaId && it.positionKnown }?.positionNow() ?: player.currentPosition
+        load(item, at.coerceAtLeast(0L), true)
+        return true
     }
 
     private fun load(item: MediaItem, positionMs: Long, play: Boolean) {
@@ -151,6 +169,7 @@ class CastMirror(private val context: Context, private val player: Player, priva
                         kotlinx.coroutines.delay(STUCK_MS)
                         val now = receiver?.status?.value ?: return@launch
                         if (waiting && player.currentMediaItem?.mediaId == song && now.state in listOf(RemoteState.LOADING, RemoteState.BUFFERING)) {
+                            if (reloadHere()) return@launch
                             Cast.say(com.opentune.i18n.Tr.f("{0} couldn't play {1}", r.name, player.mediaMetadata.title ?: com.opentune.i18n.Tr.t("this song")))
                             waiting = false
                             if (player.hasNextMediaItem()) { player.seekToNextMediaItem(); player.play() } else follow { player.pause() }
@@ -177,6 +196,7 @@ class CastMirror(private val context: Context, private val player: Player, priva
                 if (player.hasNextMediaItem()) player.seekToNextMediaItem() else follow { player.pause() }
             }
             RemoteState.ERROR -> if (!settling) {
+                if (reloadHere()) return
                 Cast.say(com.opentune.i18n.Tr.f("{0} couldn't play {1}", r.name, player.mediaMetadata.title ?: com.opentune.i18n.Tr.t("this song")))
                 if (player.hasNextMediaItem()) player.seekToNextMediaItem()
             }
@@ -191,5 +211,7 @@ class CastMirror(private val context: Context, private val player: Player, priva
         const val DRIFT_MS = 1_500L
         /** How long a song may sit loading on the device before it's taken as one it can't play. */
         const val STUCK_MS = 15_000L
+        /** How many times a song is reloaded on the device before it's skipped. */
+        const val MAX_RETRIES = 3
     }
 }

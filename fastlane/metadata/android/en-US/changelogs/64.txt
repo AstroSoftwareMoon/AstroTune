@@ -1,0 +1,1 @@
+AstroTune 2.0.4: casting to Google Home/Chromecast no longer skips songs half way.

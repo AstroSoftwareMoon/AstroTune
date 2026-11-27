@@ -34,7 +34,23 @@ jobs:
         with:
           packages: platform-tools platforms;android-37.0 build-tools;36.0.0 ndk;27.2.12479018 cmake;3.22.1
       - uses: gradle/actions/setup-gradle@v4
+      # The same signing key every release, so each version installs over the last one and
+      # keeps the library. Without the secret the build falls back to a throwaway debug key.
+      - name: Signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ASTROTUNE_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/astrotune.jks"
+            echo "OPENTUNE_KEYSTORE=$RUNNER_TEMP/astrotune.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No ASTROTUNE_KEYSTORE_B64 secret: APKs are signed with a throwaway key and won't update over the installed app."
+          fi
       - name: Build phone and TV APKs
+        env:
+          OPENTUNE_KEYSTORE_PASSWORD: ${{ secrets.ASTROTUNE_KEYSTORE_PASSWORD }}
+          OPENTUNE_KEY_ALIAS: ${{ secrets.ASTROTUNE_KEY_ALIAS }}
+          OPENTUNE_KEY_PASSWORD: ${{ secrets.ASTROTUNE_KEYSTORE_PASSWORD }}
         run: ./gradlew --no-daemon :app:assembleRelease :tv:assembleRelease
       - name: Name the files
         run: |
